@@ -1,14 +1,25 @@
-version: "3.8"
-
 services:
   gateway:
     build: client-gateaway 
-    container_name: client-gateaway
+    container_name: client-gateway
     ports:
       - "3000:3000"
     depends_on:
       - postgres
     environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/mydatabase
+    networks:
+      - backend-network
+
+  student-service:
+    build: students-ms
+    container_name: students-ms
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+    environment:
+      PORT: 3001
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/mydatabase
     networks:
       - backend-network
