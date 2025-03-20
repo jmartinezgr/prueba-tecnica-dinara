@@ -28,7 +28,7 @@ model Student {
   birthDate          DateTime
   nationality        String
   //TimeStamps
-  createdAt          DateTime
-  updatedAt          DateTime
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
