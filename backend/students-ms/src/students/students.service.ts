@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { PrismaClient, Prisma } from '@prisma/client';
+import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 
 @Injectable()
 export class StudentsService extends PrismaClient implements OnModuleInit {
@@ -10,7 +11,6 @@ export class StudentsService extends PrismaClient implements OnModuleInit {
     console.log('Database Connected');
   }
   async create(createStudentDto: CreateStudentDto) {
-    console.log(createStudentDto);
     try {
       return await this.student.create({
         data: createStudentDto,
@@ -24,16 +24,18 @@ export class StudentsService extends PrismaClient implements OnModuleInit {
           throw new BadRequestException(`El campo ${field} ya está en uso.`);
         }
       }
-      throw error; // Si no es un error de Prisma, lo relanzamos
+      throw error;
     }
   }
 
   findAll() {
-    return this.student.findMany(); // Obtiene todos los estudiantes
+    return this.student.findMany();
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} student`;
+  async findOne(id: string) {
+    return this.student.findUnique({
+      where: { id },
+    });
   }
 
   update(id: string, updateStudentDto: UpdateStudentDto) {
