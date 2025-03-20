@@ -32,15 +32,15 @@ export class StudentsService extends PrismaClient implements OnModuleInit {
     return this.student.findMany(); // Obtiene todos los estudiantes
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} student`;
   }
 
-  update(id: number, updateStudentDto: UpdateStudentDto) {
+  update(id: string, updateStudentDto: UpdateStudentDto) {
     return `This action updates a #${id} student`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} student`;
   }
 }
