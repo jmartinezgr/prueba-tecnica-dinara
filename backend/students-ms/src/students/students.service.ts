@@ -10,7 +10,6 @@ export class StudentsService extends PrismaClient implements OnModuleInit {
     console.log('Database Connected');
   }
   async create(createStudentDto: CreateStudentDto) {
-    console.log(createStudentDto);
     try {
       return await this.student.create({
         data: createStudentDto,
