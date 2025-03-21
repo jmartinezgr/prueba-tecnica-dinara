@@ -64,7 +64,20 @@ export class StudentsService extends PrismaClient implements OnModuleInit {
     return student;
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} student`;
+  async remove(id: string) {
+    try {
+      return await this.student.delete({
+        where: { id },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException(
+            `No se encontró el estudiante con ID: ${id}`,
+          );
+        }
+      }
+      throw error;
+    }
   }
 }
