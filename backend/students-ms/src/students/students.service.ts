@@ -1,8 +1,12 @@
-import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { PrismaClient, Prisma } from '@prisma/client';
-import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 
 @Injectable()
 export class StudentsService extends PrismaClient implements OnModuleInit {
@@ -32,14 +36,32 @@ export class StudentsService extends PrismaClient implements OnModuleInit {
     return this.student.findMany();
   }
 
-  async findOne(id: string) {
-    return this.student.findUnique({
-      where: { id },
-    });
+  async update(id: string, updateStudentDto: UpdateStudentDto) {
+    try {
+      return await this.student.update({
+        where: { id },
+        data: updateStudentDto,
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException(
+            `No se encontró el estudiante con ID: ${id}`,
+          );
+        }
+      } else if (error instanceof Prisma.PrismaClientValidationError) {
+        throw new BadRequestException('Datos inválidos en la actualización.');
+      }
+      throw error;
+    }
   }
 
-  update(id: string, updateStudentDto: UpdateStudentDto) {
-    return `This action updates a #${id} student`;
+  async findOne(id: string) {
+    const student = await this.student.findUnique({ where: { id } });
+    if (!student) {
+      throw new NotFoundException(`No se encontró el estudiante con ID: ${id}`);
+    }
+    return student;
   }
 
   remove(id: string) {
