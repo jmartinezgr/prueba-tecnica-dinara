@@ -38,9 +38,11 @@ export class StudentsService extends PrismaClient implements OnModuleInit {
 
   async update(id: string, updateStudentDto: UpdateStudentDto) {
     try {
+      const { id: __, ...updateData } = updateStudentDto;
+
       return await this.student.update({
         where: { id },
-        data: updateStudentDto,
+        data: updateData,
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
