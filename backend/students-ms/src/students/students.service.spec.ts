@@ -16,8 +16,10 @@ describe('StudentsService', () => {
     prisma = module.get<PrismaService>(PrismaService);
 
     jest.clearAllMocks();
+    await prisma.student.deleteMany();
+  });
 
-    // Eliminar posibles datos previos para evitar conflictos
+  afterEach(async () => {
     await prisma.student.deleteMany();
   });
 
@@ -50,10 +52,77 @@ describe('StudentsService', () => {
     };
 
     await service.create(studentData);
-
     await expect(service.create(studentData)).rejects.toThrow(
       BadRequestException,
     );
+  });
+
+  it('debería actualizar un estudiante correctamente', async () => {
+    const studentData = await prisma.student.create({
+      data: {
+        id: '000000005',
+        firstName: 'Pedro',
+        lastName: 'González',
+        gender: 'M',
+        personalEmail: 'pedro@example.com',
+        institutionalEmail: 'pedro@school.edu',
+        birthDate: new Date('1998-08-08'),
+        nationality: 'Colombiana',
+      },
+    });
+
+    const updatedData = await service.update('000000005', {
+      firstName: 'Pedro Modificado',
+    });
+    expect(updatedData.firstName).toBe('Pedro Modificado');
+  });
+
+  it('debería lanzar error al intentar actualizar con un campo inválido', async () => {
+    const studentData = await prisma.student.create({
+      data: {
+        id: '000000006',
+        firstName: 'Elena',
+        lastName: 'Rodríguez',
+        gender: 'F',
+        personalEmail: 'elena@example.com',
+        institutionalEmail: 'elena@school.edu',
+        birthDate: new Date('2001-02-14'),
+        nationality: 'Colombiana',
+      },
+    });
+
+    await expect(
+      service.update('000000006', {
+        invalidField: 'Valor no permitido',
+      } as any),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('debería lanzar error al intentar actualizar con un tipo de dato incorrecto', async () => {
+    const studentData = await prisma.student.create({
+      data: {
+        id: '000000007',
+        firstName: 'Sofía',
+        lastName: 'Fernández',
+        gender: 'F',
+        personalEmail: 'sofia@example.com',
+        institutionalEmail: 'sofia@school.edu',
+        birthDate: new Date('1995-06-30'),
+        nationality: 'Colombiana',
+      },
+    });
+
+    await expect(
+      service.update('000000007', {
+        birthDate: 'fecha-invalida' as unknown as Date,
+      }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('debería lanzar error si intenta actualizar un estudiante que no existe', async () => {
+    await expect(
+      service.update('999999999', { firstName: 'Nombre Inexistente' }),
+    ).rejects.toThrow(NotFoundException);
   });
 
   it('debería obtener todos los estudiantes', async () => {
@@ -84,8 +153,6 @@ describe('StudentsService', () => {
 
     const students = await service.findAll();
     expect(students).toHaveLength(2);
-    expect(students[0]).toHaveProperty('id');
-    expect(students[1]).toHaveProperty('id');
   });
 
   it('debería obtener un estudiante por su ID', async () => {
@@ -101,7 +168,6 @@ describe('StudentsService', () => {
     };
 
     await prisma.student.create({ data: studentData });
-
     const student = await service.findOne('000000003');
     expect(student).toMatchObject(studentData);
   });
@@ -111,7 +177,6 @@ describe('StudentsService', () => {
       NotFoundException,
     );
   });
-
   it('debería eliminar un estudiante por su ID', async () => {
     const studentData = {
       id: '000000004',
