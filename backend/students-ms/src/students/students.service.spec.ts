@@ -1,7 +1,7 @@
+import { RpcException } from '@nestjs/microservices';
 import { PrismaService } from './../../prisma/prisma.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { StudentsService } from './students.service';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('StudentsService', () => {
   let service: StudentsService;
@@ -52,9 +52,7 @@ describe('StudentsService', () => {
     };
 
     await service.create(studentData);
-    await expect(service.create(studentData)).rejects.toThrow(
-      BadRequestException,
-    );
+    await expect(service.create(studentData)).rejects.toThrow(RpcException);
   });
 
   it('debería actualizar un estudiante correctamente', async () => {
@@ -95,7 +93,7 @@ describe('StudentsService', () => {
       service.update('000000006', {
         invalidField: 'Valor no permitido',
       } as any),
-    ).rejects.toThrow(BadRequestException);
+    ).rejects.toThrow(RpcException);
   });
 
   it('debería lanzar error al intentar actualizar con un tipo de dato incorrecto', async () => {
@@ -116,13 +114,13 @@ describe('StudentsService', () => {
       service.update('000000007', {
         birthDate: 'fecha-invalida' as unknown as Date,
       }),
-    ).rejects.toThrow(BadRequestException);
+    ).rejects.toThrow(RpcException);
   });
 
   it('debería lanzar error si intenta actualizar un estudiante que no existe', async () => {
     await expect(
       service.update('999999999', { firstName: 'Nombre Inexistente' }),
-    ).rejects.toThrow(NotFoundException);
+    ).rejects.toThrow(RpcException);
   });
 
   it('debería obtener todos los estudiantes', async () => {
@@ -173,9 +171,7 @@ describe('StudentsService', () => {
   });
 
   it('debería lanzar error si el estudiante no existe', async () => {
-    await expect(service.findOne('999999999')).rejects.toThrow(
-      NotFoundException,
-    );
+    await expect(service.findOne('999999999')).rejects.toThrow(RpcException);
   });
   it('debería eliminar un estudiante por su ID', async () => {
     const studentData = {
@@ -201,9 +197,7 @@ describe('StudentsService', () => {
   });
 
   it('debería lanzar error al intentar eliminar un estudiante que no existe', async () => {
-    await expect(service.remove('999999999')).rejects.toThrow(
-      NotFoundException,
-    );
+    await expect(service.remove('999999999')).rejects.toThrow(RpcException);
   });
 
   it('debería obtener todos los estudiantes', async () => {

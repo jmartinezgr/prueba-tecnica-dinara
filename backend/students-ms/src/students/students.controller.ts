@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { StudentsService } from './students.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 
 @Controller('students')
 export class StudentsController {
@@ -26,6 +26,11 @@ export class StudentsController {
 
   @MessagePattern({ cmd: 'updateStudent' })
   update(@Payload() updateStudentDto: UpdateStudentDto) {
+    if (!updateStudentDto.id) {
+      throw new RpcException(
+        'El ID del estudiante es requerido para actualizar.',
+      );
+    }
     return this.studentsService.update(updateStudentDto.id, updateStudentDto);
   }
 
