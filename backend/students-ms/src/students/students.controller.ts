@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UsePipes, ValidationPipe } from '@nestjs/common';
 import { StudentsService } from './students.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
@@ -9,6 +9,7 @@ export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
   @MessagePattern({ cmd: 'createStudent' })
+  @UsePipes(new ValidationPipe({ transform: true })) // Aplica el pipeli
   create(@Payload() createStudentDto: CreateStudentDto) {
     return this.studentsService.create(createStudentDto);
   }
@@ -25,6 +26,7 @@ export class StudentsController {
   }
 
   @MessagePattern({ cmd: 'updateStudent' })
+  @UsePipes(new ValidationPipe({ transform: true })) // Aplica el pipeli
   update(@Payload() updateStudentDto: UpdateStudentDto) {
     if (!updateStudentDto.id) {
       throw new RpcException(

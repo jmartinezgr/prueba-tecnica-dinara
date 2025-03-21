@@ -62,17 +62,21 @@ export class StudentsController {
   findOneStudent(@Param('id') id: string) {
     return this.studentClient.send({ cmd: 'findOneStudent' }, { id });
   }
+
   @Patch(':id')
   async updateStudent(
     @Param('id') id: string,
     @Body() updateStudentDto: UpdateStudentDto,
   ) {
     try {
+      console.log('ID en la URL:', id);
+      console.log('Datos recibidos:', updateStudentDto);
+
+      // Sobrescribe el ID en el DTO
+      const updatedData = { ...updateStudentDto, id };
+
       return await firstValueFrom<CreateStudentDto>(
-        this.studentClient.send(
-          { cmd: 'updateStudent' },
-          { id, data: updateStudentDto },
-        ),
+        this.studentClient.send({ cmd: 'updateStudent' }, updatedData),
       );
     } catch (error: unknown) {
       if (error instanceof RpcException) {
