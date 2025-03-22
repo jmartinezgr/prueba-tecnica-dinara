@@ -3,5 +3,7 @@ import { StudentsModule } from './students/students.module';
 
 @Module({
   imports: [StudentsModule],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
