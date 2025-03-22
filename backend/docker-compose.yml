@@ -7,8 +7,10 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - postgres
+      - students-ms
     environment:
+      STUDENT_SERVICE_HOST: students-ms
+      STUDENT_SERVICE_PORT: 3001
       DATABASE_URL: postgres://postgres:postgres@postgres-db:5432/mydatabase
     networks:
       - backend-network
@@ -21,6 +23,7 @@ services:
     depends_on:
       - postgres-students
     environment:
+      HOST: 0.0.0.0
       PORT: 3001
       DATABASE_URL: postgres://dinara:dinara1234@postgres-students:5432/students
     networks:
@@ -38,28 +41,11 @@ services:
       - pgdata_students:/var/lib/postgresql/data
       - ./students-ms/db/init.sql:/docker-entrypoint-initdb.d/init.sql    
     ports:
-      - "5433:5432"
-    networks:
-      - backend-network
-
-  postgres:
-    image: postgres:15  
-    container_name: postgres-db
-    restart: always
-    ports:
       - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: mydatabase
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
     networks:
       - backend-network
 
 volumes:
-  postgres_data:
-    name: postgres_data
   pgdata_students:
     name: pgdata_students
 
