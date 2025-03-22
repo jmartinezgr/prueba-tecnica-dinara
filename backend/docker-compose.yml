@@ -29,6 +29,20 @@ services:
     networks:
       - backend-network
 
+  courses-ms:
+    build: courses-ms
+    container_name: courses-ms
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres-courses
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3002
+      DATABASE_URL: postgres://courses_user:courses_pass@postgres-courses:5432/courses
+    networks:
+      - backend-network      
+
   postgres-students:
     image: postgres:15
     container_name: postgres-students
@@ -45,9 +59,28 @@ services:
     networks:
       - backend-network
 
+  postgres-courses:
+    image: postgres:15
+    container_name: postgres-courses
+    restart: always
+    environment:
+      - POSTGRES_DB=courses
+      - POSTGRES_USER=courses_user
+      - POSTGRES_PASSWORD=courses_pass
+    volumes:
+      - pgdata_courses:/var/lib/postgresql/data
+      - ./courses-ms/db/init.sql:/docker-entrypoint-initdb.d/init.sql    
+    ports:
+      - "5433:5432"
+    networks:
+      - backend-network
+
 volumes:
   pgdata_students:
     name: pgdata_students
+  pgdata_courses:
+    name: pgdata_courses
+
 
 networks:
   backend-network:
