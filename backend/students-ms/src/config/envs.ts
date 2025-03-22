@@ -6,6 +6,7 @@ dotenv.config();
 
 interface EnvVars {
   PORT: number;
+  HOST: string;
   DATABASE_URL: string;
 }
 
@@ -13,6 +14,7 @@ interface EnvVars {
 const envsSchema = Joi.object<EnvVars>({
   PORT: Joi.number().default(3001), // Valor por defecto si no está en .env ni en process.env
   DATABASE_URL: Joi.string().required(),
+  HOST: Joi.string().required(),
 }).unknown(true); // Permite variables adicionales en `process.env`
 
 // Validar las variables de entorno
@@ -28,4 +30,5 @@ const envVars: EnvVars = validationResult.value;
 export const envs = {
   port: envVars.PORT,
   databaseUrl: envVars.DATABASE_URL,
+  host: envVars.HOST,
 };
