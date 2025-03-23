@@ -10,8 +10,8 @@ interface EnvVars {
   STUDENT_SERVICE_PORT: number;
   COURSE_SERVICE_HOST: string;
   COURSE_SERVICE_PORT: number;
-  INSCRIPTIONS_SERVICE_HOST: string;
-  INSCRIPTIONS_SERVICE_PORT: number;
+  INSCRIPTION_SERVICE_HOST: string;
+  INSCRIPTION_SERVICE_PORT: number;
 }
 
 // Definir el esquema de validación
@@ -21,8 +21,8 @@ const envsSchema = Joi.object<EnvVars>({
   STUDENT_SERVICE_PORT: Joi.number().required(),
   COURSE_SERVICE_HOST: Joi.string().required(),
   COURSE_SERVICE_PORT: Joi.number().required(),
-  INSCRIPTIONS_SERVICE_HOST: Joi.string().required(),
-  INSCRIPTIONS_SERVICE_PORT: Joi.number().required(),
+  INSCRIPTION_SERVICE_HOST: Joi.string().required(),
+  INSCRIPTION_SERVICE_PORT: Joi.number().required(),
 }).unknown(true); // Permite variables adicionales en `process.env`
 
 // Validar las variables de entorno
@@ -41,6 +41,6 @@ export const envs = {
   studentsMsPort: envVars.STUDENT_SERVICE_PORT,
   coursesMsHost: envVars.COURSE_SERVICE_HOST,
   coursesMsPort: envVars.COURSE_SERVICE_PORT,
-  inscriptionsMsHost: envVars.INSCRIPTIONS_SERVICE_HOST,
-  inscriptionsMsPort: envVars.INSCRIPTIONS_SERVICE_PORT,
+  inscriptionMsHost: envVars.INSCRIPTION_SERVICE_HOST,
+  inscriptionMsPort: envVars.INSCRIPTION_SERVICE_PORT,
 };
