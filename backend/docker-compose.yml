@@ -13,6 +13,8 @@ services:
       STUDENT_SERVICE_PORT: 3001
       COURSE_SERVICE_HOST: courses-ms
       COURSE_SERVICE_PORT: 3002
+      INSCRIPTION_SERVICE_HOST: inscriptions-ms
+      INSCRIPTION_SERVICE_PORT: 3003
       DATABASE_URL: postgres://postgres:postgres@postgres-db:5432/mydatabase
     networks:
       - backend-network
@@ -43,7 +45,21 @@ services:
       PORT: 3002
       DATABASE_URL: postgres://dinara:dinara1234@postgres-courses:5432/courses
     networks:
-      - backend-network      
+      - backend-network   
+
+  inscriptions-ms:
+    build: inscriptions-ms
+    container_name: inscriptions-ms
+    ports:
+      - "3003:3003"
+    depends_on:
+      - postgres-inscriptions
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3003
+      DATABASE_URL: postgres://dinara:dinara1234@postgres-inscriptions:5432/inscriptions
+    networks:
+      - backend-network     
 
   postgres-students:
     image: postgres:15
@@ -77,11 +93,29 @@ services:
     networks:
       - backend-network
 
+  postgres-inscriptions:
+    image: postgres:15
+    container_name: postgres-inscriptions
+    restart: always
+    environment:
+      - POSTGRES_DB=inscriptions
+      - POSTGRES_USER=dinara
+      - POSTGRES_PASSWORD=dinara1234
+    volumes:
+      - pgdata_inscriptions:/var/lib/postgresql/data
+      - ./inscriptions-ms/db/init.sql:/docker-entrypoint-initdb.d/init.sql    
+    ports:
+      - "5434:5432"
+    networks:
+      - backend-network
+
 volumes:
   pgdata_students:
     name: pgdata_students
   pgdata_courses:
     name: pgdata_courses
+  pgdata_inscriptions:
+    name: pgdata_inscriptions
 
 
 networks:
