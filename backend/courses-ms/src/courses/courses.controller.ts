@@ -1,42 +1,53 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+import { Controller, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 
-@Controller('courses')
+@Controller()
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
-  @Post()
-  create(@Body() createCourseDto: CreateCourseDto) {
+  @MessagePattern({ cmd: 'createCourse' })
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  )
+  create(@Payload() createCourseDto: CreateCourseDto) {
     return this.coursesService.create(createCourseDto);
   }
 
-  @Get()
+  @MessagePattern({ cmd: 'findCourses' })
   findAll() {
     return this.coursesService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.coursesService.findOne(+id);
+  @MessagePattern({ cmd: 'findOneCourse' })
+  findOne(@Payload('id') id: string) {
+    return this.coursesService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
-    return this.coursesService.update(+id, updateCourseDto);
+  @MessagePattern({ cmd: 'updateCourse' })
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  )
+  update(@Payload() updateCourseDto: UpdateCourseDto) {
+    if (!updateCourseDto.id) {
+      throw new RpcException('El ID del curso es requerido para actualizar.');
+    }
+    return this.coursesService.update(updateCourseDto.id, updateCourseDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.coursesService.remove(+id);
+  @MessagePattern({ cmd: 'deleteCourse' })
+  remove(@Payload('id') id: string) {
+    return this.coursesService.remove(id);
   }
 }
