@@ -8,7 +8,7 @@ WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'courses')\gexec
 -- Crear la tabla si no existe
 CREATE TABLE IF NOT EXISTS "Course" (
   id TEXT PRIMARY KEY, -- Identificador único del curso
-  name TEXT NOT NULL, -- Nombre del curso
+  name TEXT NOT NULL UNIQUE, -- Nombre del curso
   professor TEXT NOT NULL, -- Nombre del profesor
   maxSlots INT NOT NULL, -- Número máximo de cupos
   enrolledStudents INT DEFAULT 0, -- Número de estudiantes matriculados

@@ -16,7 +16,7 @@ datasource db {
 
 model Course {
   id               String   @id
-  name             String   @map("name")
+  name             String   @unique @map("name")
   professor        String   @map("professor")
   maxSlots         Int      @map("maxslots")
   enrolledStudents Int      @default(0) @map("enrolledstudents")
