@@ -6,9 +6,20 @@
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Course {
+  id               String   @id
+  name             String   @map("name")
+  professor        String   @map("professor")
+  maxSlots         Int      @map("maxslots")
+  enrolledStudents Int      @default(0) @map("enrolledstudents")
+  createdAt        DateTime? @default(now()) @map("createdat") @db.Timestamp(6)
+  updatedAt        DateTime? @default(now()) @map("updatedat") @db.Timestamp(6)
 }

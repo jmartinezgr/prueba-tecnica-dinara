@@ -39,7 +39,7 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 3002
-      DATABASE_URL: postgres://courses_user:courses_pass@postgres-courses:5432/courses
+      DATABASE_URL: postgres://dinara:dinara1234@postgres-courses:5433/courses
     networks:
       - backend-network      
 
@@ -65,13 +65,13 @@ services:
     restart: always
     environment:
       - POSTGRES_DB=courses
-      - POSTGRES_USER=courses_user
-      - POSTGRES_PASSWORD=courses_pass
+      - POSTGRES_USER=dinara
+      - POSTGRES_PASSWORD=dinara1234
     volumes:
       - pgdata_courses:/var/lib/postgresql/data
       - ./courses-ms/db/init.sql:/docker-entrypoint-initdb.d/init.sql    
     ports:
-      - "5433:5433"
+      - "5433:5432"
     networks:
       - backend-network
 

@@ -1,9 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { PrismaClient } from '@prisma/client';
 
 @Injectable()
-export class CoursesService {
+export class CoursesService extends PrismaClient implements OnModuleInit {
+  onModuleInit() {
+    this.$connect();
+    console.log('Connected to the database');
+  }
+
   create(createCourseDto: CreateCourseDto) {
     return 'This action adds a new course';
   }
