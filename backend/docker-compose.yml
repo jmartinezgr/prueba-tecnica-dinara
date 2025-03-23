@@ -77,11 +77,29 @@ services:
     networks:
       - backend-network
 
+  postgres-inscriptions:
+    image: postgres:15
+    container_name: postgres-inscriptions
+    restart: always
+    environment:
+      - POSTGRES_DB=inscriptions
+      - POSTGRES_USER=dinara
+      - POSTGRES_PASSWORD=dinara1234
+    volumes:
+      - pgdata_inscriptions:/var/lib/postgresql/data
+      - ./inscriptions-ms/db/init.sql:/docker-entrypoint-initdb.d/init.sql    
+    ports:
+      - "5434:5432"
+    networks:
+      - backend-network
+
 volumes:
   pgdata_students:
     name: pgdata_students
   pgdata_courses:
     name: pgdata_courses
+  pgdata_inscriptions:
+    name: pgdata_inscriptions
 
 
 networks:

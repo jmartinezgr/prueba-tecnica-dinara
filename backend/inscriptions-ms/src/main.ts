@@ -5,5 +5,6 @@ import { envs } from './config';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   await app.listen(envs.port);
+  console.log('Course Microservice is running on port:', envs.port);
 }
 bootstrap();
