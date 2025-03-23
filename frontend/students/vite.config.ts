@@ -14,6 +14,11 @@ export default defineConfig({
       shared: ["react", "react-dom"],
     }),
   ],
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./src/setupTests.ts",
+  },
   server: {
     port: 5002,
     headers: {

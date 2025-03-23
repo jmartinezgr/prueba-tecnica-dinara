@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import { Box, Drawer, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
+import { Box, Drawer, List, ListItem, ListItemButton, ListItemText} from "@mui/material";
 import StudentsList from "../src/pages/StudentsList";
 import CreateStudent from "../src/pages/CreateStudent";
 
@@ -21,12 +21,12 @@ function App() {
 
           <List>
             <ListItem disablePadding>
-              <ListItemButton component={Link} to="/students">
+              <ListItemButton component={Link} to="/">
                 <ListItemText primary="Listado" />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton component={Link} to="/students/new">
+              <ListItemButton component={Link} to="/new">
                 <ListItemText primary="Crear Estudiante" />
               </ListItemButton>
             </ListItem>
@@ -36,8 +36,8 @@ function App() {
         {/* Contenido Principal */}
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
           <Routes>
-            <Route path="/students" element={<StudentsList />} />
-            <Route path="/students/new" element={<CreateStudent />} />
+            <Route path="/" element={<StudentsList />} />
+            <Route path="/new" element={<CreateStudent />} />
           </Routes>
         </Box>
       </Box>
