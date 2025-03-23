@@ -11,6 +11,8 @@ services:
     environment:
       STUDENT_SERVICE_HOST: students-ms
       STUDENT_SERVICE_PORT: 3001
+      COURSE_SERVICE_HOST: courses-ms
+      COURSE_SERVICE_PORT: 3002
       DATABASE_URL: postgres://postgres:postgres@postgres-db:5432/mydatabase
     networks:
       - backend-network
@@ -29,6 +31,20 @@ services:
     networks:
       - backend-network
 
+  courses-ms:
+    build: courses-ms
+    container_name: courses-ms
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres-courses
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3002
+      DATABASE_URL: postgres://dinara:dinara1234@postgres-courses:5432/courses
+    networks:
+      - backend-network      
+
   postgres-students:
     image: postgres:15
     container_name: postgres-students
@@ -45,9 +61,28 @@ services:
     networks:
       - backend-network
 
+  postgres-courses:
+    image: postgres:15
+    container_name: postgres-courses
+    restart: always
+    environment:
+      - POSTGRES_DB=courses
+      - POSTGRES_USER=dinara
+      - POSTGRES_PASSWORD=dinara1234
+    volumes:
+      - pgdata_courses:/var/lib/postgresql/data
+      - ./courses-ms/db/init.sql:/docker-entrypoint-initdb.d/init.sql    
+    ports:
+      - "5433:5432"
+    networks:
+      - backend-network
+
 volumes:
   pgdata_students:
     name: pgdata_students
+  pgdata_courses:
+    name: pgdata_courses
+
 
 networks:
   backend-network:
