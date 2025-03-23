@@ -1,9 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Delete, Get, Query } from '@nestjs/common';
 import { InscriptionsService } from './inscriptions.service';
 import { CreateInscriptionDto } from './dto/create-inscription.dto';
-import { UpdateInscriptionDto } from './dto/update-inscription.dto';
 
-@Controller('inscriptions')
+@Controller()
 export class InscriptionsController {
   constructor(private readonly inscriptionsService: InscriptionsService) {}
 
@@ -13,22 +12,13 @@ export class InscriptionsController {
   }
 
   @Get()
-  findAll() {
-    return this.inscriptionsService.findAll();
+  findAll(@Query() query: { userId?: string; courseId?: string }) {
+    return this.inscriptionsService.findAll(query);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.inscriptionsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateInscriptionDto: UpdateInscriptionDto) {
-    return this.inscriptionsService.update(+id, updateInscriptionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.inscriptionsService.remove(+id);
+  @Delete()
+  remove(@Body() deleteBody: { userId: string; courseId: string }) {
+    const { userId, courseId } = deleteBody;
+    return this.inscriptionsService.remove(userId, courseId);
   }
 }
