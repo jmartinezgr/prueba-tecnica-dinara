@@ -43,7 +43,21 @@ services:
       PORT: 3002
       DATABASE_URL: postgres://dinara:dinara1234@postgres-courses:5432/courses
     networks:
-      - backend-network      
+      - backend-network   
+
+  inscriptions-ms:
+    build: inscriptions-ms
+    container_name: inscriptions-ms
+    ports:
+      - "3003:3003"
+    depends_on:
+      - postgres-inscriptions
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3003
+      DATABASE_URL: postgres://dinara:dinara1234@postgres-inscriptions:5432/inscriptions
+    networks:
+      - backend-network     
 
   postgres-students:
     image: postgres:15
