@@ -1,24 +1,39 @@
-import { Controller, Post, Body, Delete, Get, Query } from '@nestjs/common';
+import { Controller, UsePipes, ValidationPipe } from '@nestjs/common';
 import { InscriptionsService } from './inscriptions.service';
 import { CreateInscriptionDto } from './dto/create-inscription.dto';
+import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 
 @Controller()
 export class InscriptionsController {
   constructor(private readonly inscriptionsService: InscriptionsService) {}
 
-  @Post()
-  create(@Body() createInscriptionDto: CreateInscriptionDto) {
+  @MessagePattern({ cmd: 'createInscription' })
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  )
+  create(@Payload() createInscriptionDto: CreateInscriptionDto) {
     return this.inscriptionsService.create(createInscriptionDto);
   }
 
-  @Get()
-  findAll(@Query() query: { userId?: string; courseId?: string }) {
+  @MessagePattern({ cmd: 'findInscriptions' })
+  findAll(@Payload() query: { userId?: string; courseId?: string }) {
     return this.inscriptionsService.findAll(query);
   }
 
-  @Delete()
-  remove(@Body() deleteBody: { userId: string; courseId: string }) {
-    const { userId, courseId } = deleteBody;
-    return this.inscriptionsService.remove(userId, courseId);
+  @MessagePattern({ cmd: 'deleteInscription' })
+  remove(@Payload() deleteBody: { userId: string; courseId: string }) {
+    if (!deleteBody.userId || !deleteBody.courseId) {
+      throw new RpcException(
+        'userId y courseId son requeridos para eliminar una inscripción.',
+      );
+    }
+    return this.inscriptionsService.remove(
+      deleteBody.userId,
+      deleteBody.courseId,
+    );
   }
 }
