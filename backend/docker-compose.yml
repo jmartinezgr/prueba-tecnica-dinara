@@ -39,7 +39,7 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 3002
-      DATABASE_URL: postgres://dinara:dinara1234@postgres-courses:5433/courses
+      DATABASE_URL: postgres://dinara:dinara1234@postgres-courses:5432/courses
     networks:
       - backend-network      
 
