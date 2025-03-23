@@ -69,9 +69,6 @@ export class StudentsController {
     @Body() updateStudentDto: UpdateStudentDto,
   ) {
     try {
-      console.log('ID en la URL:', id);
-      console.log('Datos recibidos:', updateStudentDto);
-
       // Sobrescribe el ID en el DTO
       const updatedData = { ...updateStudentDto, id };
 

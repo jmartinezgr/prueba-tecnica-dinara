@@ -1,1 +1,2 @@
 export const STUDENT_SERVICE = 'STUDENT_SERVICE';
+export const COURSE_SERVICE = 'COURSE_SERVICE';

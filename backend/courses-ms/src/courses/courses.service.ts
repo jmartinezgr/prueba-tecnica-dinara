@@ -12,18 +12,20 @@ export class CoursesService extends PrismaClient implements OnModuleInit {
     this.$connect();
     console.log('Database Connected');
   }
-
   async create(createCourseDto: CreateCourseDto) {
     try {
-      return (await this.course.create({
+      return await this.course.create({
         data: createCourseDto,
-      })) as CreateCourseDto;
+      });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
+          const field =
+            (error.meta?.target as string[])?.join(', ') || 'desconocido';
+          console.error(`❌ Error de unicidad en: ${field}`);
           throw new RpcException({
             statusCode: 400,
-            message: `El nombre del curso '${createCourseDto.name}' ya está en uso.`,
+            message: `El campo ${field} ya está en uso.`,
           });
         }
       }
@@ -67,9 +69,12 @@ export class CoursesService extends PrismaClient implements OnModuleInit {
         }
       }
 
+      // Omitimos `id` explícitamente antes de actualizar
+      const { id: _, ...dataToUpdate } = updateCourseDto;
+
       return await this.course.update({
         where: { id },
-        data: updateCourseDto,
+        data: dataToUpdate,
       });
     } catch (error) {
       throw new RpcException('Error al actualizar el curso.');
