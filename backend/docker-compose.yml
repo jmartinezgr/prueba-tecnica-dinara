@@ -13,6 +13,8 @@ services:
       STUDENT_SERVICE_PORT: 3001
       COURSE_SERVICE_HOST: courses-ms
       COURSE_SERVICE_PORT: 3002
+      INSCRIPTION_SERVICE_HOST: inscriptions-ms
+      INSCRIPTION_SERVICE_PORT: 3003
       DATABASE_URL: postgres://postgres:postgres@postgres-db:5432/mydatabase
     networks:
       - backend-network
