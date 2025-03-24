@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
-import CreateStudent from "./CreateStudent";
+import CreateStudent from ".";
 
 describe("CreateStudent Component", () => {
   beforeEach(() => {

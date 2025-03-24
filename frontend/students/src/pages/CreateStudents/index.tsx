@@ -15,6 +15,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
+import { LABELS } from "./labels";
 
 // Esquema de validación con Zod
 const schema = z.object({
@@ -33,44 +34,40 @@ const schema = z.object({
   nationality: z.string().min(1, "La nacionalidad es obligatoria"),
 });
 
+type FormFields = z.infer<typeof schema>;
+
 const CreateStudent = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm({ resolver: zodResolver(schema) });
+  } = useForm<FormFields>({ resolver: zodResolver(schema) });
 
   const [dialog, setDialog] = useState({ open: false, success: true, message: "" });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormFields) => {
     try {
-      console.log("Datos enviados:", data); // Verifica los datos enviados
+      console.log("Datos enviados:", data);
       const response = await fetch("http://localhost:3000/api/students/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-  
-      console.log("Respuesta de la API:", response); // Verifica la respuesta de la API
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         const errorMessage = errorData?.message || "Ocurrió un error inesperado.";
-        console.log("Error en la respuesta:", errorMessage); // Verifica el mensaje de error
         setDialog({ open: true, success: false, message: `Error: ${errorMessage}` });
         return;
       }
-  
-      console.log("Estudiante creado con éxito"); // Verifica que se llegó a este punto
+
       setDialog({ open: true, success: true, message: "El estudiante ha sido creado con éxito." });
       reset();
-    } catch (error) {
-      console.log("Error en la solicitud:", error); // Verifica errores en la solicitud
+    } catch {
       setDialog({ open: true, success: false, message: "Error: No se pudo conectar con el servidor." });
     }
   };
-  
 
   return (
     <Container maxWidth="lg">
@@ -78,29 +75,16 @@ const CreateStudent = () => {
       <Paper elevation={0} sx={{ p: 4, mt: 1 }}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={2}>
-            {[
-              { label: "ID *", name: "id" },
-              { label: "Nombre *", name: "firstName" },
-              { label: "Apellido *", name: "lastName" },
-              { label: "Departamento del Documento", name: "documentDepartment" },
-              { label: "Lugar del Documento", name: "documentPlace" },
-              { label: "Etnia", name: "ethnicity" },
-              { label: "Email personal *", name: "personalEmail" },
-              { label: "Email institucional *", name: "institutionalEmail" },
-              { label: "Teléfono Móvil", name: "mobilePhone" },
-              { label: "Teléfono Fijo", name: "landlinePhone" },
-              { label: "Fecha de nacimiento *", name: "birthDate", type: "date" },
-              { label: "Nacionalidad *", name: "nationality" },
-            ].map(({ label, name, type }) => (
+            {LABELS.map(({ label, name, type }) => (
               <Grid item xs={12} sm={6} key={name}>
                 <TextField
                   fullWidth
                   label={label}
                   type={type || "text"}
                   InputLabelProps={type === "date" ? { shrink: true } : {}}
-                  {...register(name)}
-                  error={!!errors[name]}
-                  helperText={errors[name]?.message || ""}
+                  {...register(name as keyof FormFields)} // Asegura que `name` es una clave válida
+                  error={!!errors[name as keyof FormFields]} // Asegura que `name` es una clave válida
+                  helperText={errors[name as keyof FormFields]?.message || ""} // Asegura que `name` es una clave válida
                 />
               </Grid>
             ))}

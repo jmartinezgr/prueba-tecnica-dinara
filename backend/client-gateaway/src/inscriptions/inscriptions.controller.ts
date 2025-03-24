@@ -69,7 +69,7 @@ export class InscriptionsController {
       const inscriptions = await firstValueFrom(
         this.inscriptionsClient.send({ cmd: 'findInscriptions' }, query),
       );
-
+  
       console.log(inscriptions);
 
       // Si no hay inscripciones, devolver un array vacío

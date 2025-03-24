@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { Box, Drawer, List, ListItem, ListItemButton, ListItemText} from "@mui/material";
-import StudentsList from "../src/pages/StudentsList";
-import CreateStudent from "../src/pages/CreateStudent";
+import StudentsList from "./pages/StudentsList";
+import CreateStudent from "./pages/CreateStudents";
+import StudentInfo from "./pages/StudentInfo";
 
 const drawerWidth = 240; // Ancho de la barra lateral
 
@@ -21,12 +22,12 @@ function App() {
 
           <List>
             <ListItem disablePadding>
-              <ListItemButton component={Link} to="/">
+              <ListItemButton component={Link} to="students/">
                 <ListItemText primary="Listado" />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton component={Link} to="/new">
+              <ListItemButton component={Link} to="students/new">
                 <ListItemText primary="Crear Estudiante" />
               </ListItemButton>
             </ListItem>
@@ -36,8 +37,9 @@ function App() {
         {/* Contenido Principal */}
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
           <Routes>
-            <Route path="/" element={<StudentsList />} />
-            <Route path="/new" element={<CreateStudent />} />
+            <Route path="students/" element={<StudentsList />} />
+            <Route path="students/new" element={<CreateStudent />} />
+            <Route path="students/:id" element={<StudentInfo />} />
           </Routes>
         </Box>
       </Box>
