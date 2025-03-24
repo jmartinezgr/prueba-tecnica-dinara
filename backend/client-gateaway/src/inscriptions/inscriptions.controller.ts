@@ -63,8 +63,103 @@ export class InscriptionsController {
   }
 
   @Get()
-  findAll(@Query() query: { userId?: string; courseId?: string }) {
-    return this.inscriptionsClient.send({ cmd: 'findInscriptions' }, query);
+  async findAll(@Query() query: { userId?: string; courseId?: string }) {
+    try {
+      // Obtener las inscripciones basadas en el userId o courseId
+      const inscriptions = await firstValueFrom(
+        this.inscriptionsClient.send({ cmd: 'findInscriptions' }, query),
+      );
+
+      console.log(inscriptions);
+
+      // Si no hay inscripciones, devolver un array vacío
+      if (!inscriptions || inscriptions.length === 0) {
+        return [];
+      }
+
+      // Verificar la existencia de cursos y estudiantes
+      const validInscriptions = await Promise.all(
+        inscriptions.map(
+          async (inscription: { userId: string; courseId: string }) => {
+            try {
+              // Verificar si el curso existe
+              const course = await firstValueFrom(
+                this.courseClient.send(
+                  { cmd: 'findOneCourse' },
+                  { id: inscription.courseId },
+                ),
+              );
+
+              // Si el curso no existe, eliminar la inscripción
+              if (course.status === 'error') {
+                console.warn(
+                  `Curso no encontrado: ${inscription.courseId}. Eliminando inscripción.`,
+                );
+                await firstValueFrom(
+                  this.inscriptionsClient.send(
+                    { cmd: 'deleteInscription' },
+                    {
+                      userId: inscription.userId,
+                      courseId: inscription.courseId,
+                    },
+                  ),
+                );
+                return null;
+              }
+
+              // Verificar si el estudiante existe
+              const student = await firstValueFrom(
+                this.studentClient.send(
+                  { cmd: 'findOneStudent' },
+                  { id: inscription.userId },
+                ),
+              );
+
+              // Si el estudiante no existe, eliminar la inscripción
+              if (student.status === 'error') {
+                console.warn(
+                  `Estudiante no encontrado: ${inscription.userId}. Eliminando inscripción.`,
+                );
+                await firstValueFrom(
+                  this.inscriptionsClient.send(
+                    { cmd: 'deleteInscription' },
+                    {
+                      userId: inscription.userId,
+                      courseId: inscription.courseId,
+                    },
+                  ),
+                );
+                return null;
+              }
+
+              // Si ambos existen, devolver la inscripción
+              return {
+                userId: inscription.userId,
+                courseId: inscription.courseId,
+                courseDetails: course,
+              };
+            } catch (error) {
+              console.error(`Error al verificar la inscripción:`, error);
+              return null;
+            }
+          },
+        ),
+      );
+
+      // Filtrar las inscripciones válidas
+      const result = validInscriptions.filter(Boolean);
+
+      // Lógica basada en los parámetros
+      if (query.userId && query.courseId) {
+        // Si se proporcionan ambos, devolver el registro específico o null
+        return result.length > 0 ? result[0] : null;
+      } else {
+        // Si solo se proporciona userId o courseId, devolver todos los registros válidos
+        return result;
+      }
+    } catch (error) {
+      this.handleRpcError(error, 'Error al obtener las inscripciones');
+    }
   }
 
   @Delete()
@@ -76,6 +171,7 @@ export class InscriptionsController {
   }
 
   private handleRpcError(error: unknown, defaultMessage: string) {
+    console.log(error);
     // Caso 1: Si el error es una RpcException con objeto de error
     if (error instanceof RpcException) {
       const errorResponse = error.getError();
