@@ -3,11 +3,9 @@ import {
   Box,
   Drawer,
   List,
-  ListItem,
   ListItemButton,
   ListItemText,
-  Collapse,
-  ListItemIcon,
+  Collapse
 } from "@mui/material";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import { useState } from "react";
@@ -17,6 +15,7 @@ import StudentInfo from "./pages/StudentInfo";
 import CreateCourse from "./pages/CreateCourse";
 import CoursesList from "./pages/CoursesList";
 import CourseInfo from "./pages/CourseInfo";
+import InscribeStudent from "./pages/InscribeStudent";
 
 const drawerWidth = 240; // Ancho de la barra lateral
 
@@ -142,7 +141,7 @@ function App() {
 
             {/* Rutas de Inscripciones (momentáneas) */}
             <Route path="inscriptions/" element={<div>Ver Inscripciones</div>} />
-            <Route path="inscriptions/new" element={<div>Inscribir</div>} />
+            <Route path="inscriptions/new" element={<InscribeStudent/>} />
           </Routes>
         </Box>
       </Box>
