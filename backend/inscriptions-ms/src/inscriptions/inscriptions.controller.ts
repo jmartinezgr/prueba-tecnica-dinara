@@ -24,6 +24,11 @@ export class InscriptionsController {
     return this.inscriptionsService.findAll(query);
   }
 
+  @MessagePattern({ cmd: 'findOneInscription' })
+  findOneInscription(@Payload() filter: { userId: string; courseId: string }) {
+    return this.inscriptionsService.findOneInscription(filter);
+  }
+
   @MessagePattern({ cmd: 'deleteInscription' })
   remove(@Payload() deleteBody: { userId: string; courseId: string }) {
     if (!deleteBody.userId || !deleteBody.courseId) {

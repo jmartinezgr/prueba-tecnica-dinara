@@ -51,12 +51,22 @@ export class InscriptionsController {
       }
 
       // Crear la inscripción si las verificaciones pasaron
-      return await firstValueFrom(
+      const inscription = await firstValueFrom(
         this.inscriptionsClient.send(
           { cmd: 'createInscription' },
           createInscriptionDto,
         ),
       );
+
+      // Incrementar el número de estudiantes inscritos en el curso
+      await firstValueFrom(
+        this.courseClient.send(
+          { cmd: 'updateCourse' },
+          { id: courseId, enrolledStudents: course.enrolledStudents + 1 },
+        ),
+      );
+
+      return inscription;
     } catch (error) {
       this.handleRpcError(error, 'Error al inscribir al estudiante');
     }
@@ -69,9 +79,6 @@ export class InscriptionsController {
       const inscriptions = await firstValueFrom(
         this.inscriptionsClient.send({ cmd: 'findInscriptions' }, query),
       );
-  
-      console.log(inscriptions);
-
       // Si no hay inscripciones, devolver un array vacío
       if (!inscriptions || inscriptions.length === 0) {
         return [];
@@ -163,15 +170,66 @@ export class InscriptionsController {
   }
 
   @Delete()
-  remove(@Body() deleteBody: { userId: string; courseId: string }) {
-    return this.inscriptionsClient.send(
-      { cmd: 'deleteInscription' },
-      deleteBody,
-    );
+  async remove(@Body() deleteBody: { userId: string; courseId: string }) {
+    try {
+      // Verificar si el estudiante existe
+      const student = await firstValueFrom(
+        this.studentClient.send(
+          { cmd: 'findOneStudent' },
+          { id: deleteBody.userId },
+        ),
+      );
+      if (!student) {
+        throw new HttpException('El estudiante no existe', 404);
+      }
+
+      // Verificar si el curso existe
+      const course = await firstValueFrom(
+        this.courseClient.send(
+          { cmd: 'findOneCourse' },
+          { id: deleteBody.courseId },
+        ),
+      );
+      if (!course) {
+        throw new HttpException('El curso no existe', 404);
+      }
+
+      // Verificar si la inscripción existe
+      const inscription = await firstValueFrom(
+        this.inscriptionsClient.send(
+          { cmd: 'findOneInscription' },
+          { userId: deleteBody.userId, courseId: deleteBody.courseId },
+        ),
+      );
+      if (!inscription) {
+        throw new HttpException('La inscripción no existe', 404);
+      }
+
+      // Eliminar la inscripción
+      await firstValueFrom(
+        this.inscriptionsClient.send({ cmd: 'deleteInscription' }, deleteBody),
+      );
+
+      // Decrementar el número de estudiantes inscritos en el curso
+      await firstValueFrom(
+        this.courseClient.send(
+          { cmd: 'updateCourse' },
+          {
+            id: deleteBody.courseId,
+            enrolledStudents: course.enrolledStudents - 1, // Solo actualizamos este campo
+          },
+        ),
+      );
+
+      return { message: 'Inscripción eliminada con éxito' };
+    } catch (error) {
+      this.handleRpcError(error, 'Error al eliminar la inscripción');
+    }
   }
 
   private handleRpcError(error: unknown, defaultMessage: string) {
     console.log(error);
+
     // Caso 1: Si el error es una RpcException con objeto de error
     if (error instanceof RpcException) {
       const errorResponse = error.getError();
@@ -185,7 +243,20 @@ export class InscriptionsController {
       throw new HttpException(defaultMessage, 500);
     }
 
-    // Caso 2: Si el error ya tiene `response` con `status` (Ej: error de microservicio)
+    // Caso 2: Si el error es un objeto con la estructura { status: 'error', message: string }
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'status' in error &&
+      'message' in error
+    ) {
+      const err = error as { status: string; message: string };
+      if (err.status === 'error') {
+        throw new HttpException(err.message, 400); // O el código de estado que consideres adecuado
+      }
+    }
+
+    // Caso 3: Si el error ya tiene `response` con `status` (Ej: error de microservicio)
     if (
       typeof error === 'object' &&
       error !== null &&
@@ -197,7 +268,7 @@ export class InscriptionsController {
       throw new HttpException(err.response, err.status);
     }
 
-    // Caso 3: Si el error ya tiene `statusCode` y `message` (Ej: error HTTP normal)
+    // Caso 4: Si el error ya tiene `statusCode` y `message` (Ej: error HTTP normal)
     if (
       typeof error === 'object' &&
       error !== null &&
@@ -208,12 +279,12 @@ export class InscriptionsController {
       throw new HttpException(err.message, err.statusCode);
     }
 
-    // Caso 4: Si el error es un string (por si acaso)
+    // Caso 5: Si el error es un string (por si acaso)
     if (typeof error === 'string') {
       throw new HttpException(error, 500);
     }
 
-    // Caso 5: Si no es un error reconocible, lanzar una excepción interna
+    // Caso 6: Si no es un error reconocible, lanzar una excepción interna
     throw new InternalServerErrorException(defaultMessage);
   }
 }
