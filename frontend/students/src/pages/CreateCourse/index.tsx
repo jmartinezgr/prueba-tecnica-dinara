@@ -1,8 +1,3 @@
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useParams, useNavigate } from "react-router-dom";
 import {
   TextField,
   Button,
@@ -15,130 +10,45 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-
-// Esquema de validación con Zod (sin enrolledStudents en el formulario)
-const formSchema = z.object({
-  id: z.string().min(1, "El ID es obligatorio"),
-  name: z.string().min(1, "El nombre del curso es obligatorio"),
-  professor: z.string().min(1, "El nombre del profesor es obligatorio"),
-  maxSlots: z.number().min(1, "El número máximo de cupos debe ser al menos 1"),
-});
-
-type FormFields = z.infer<typeof formSchema>;
-
-// Tipo completo incluyendo enrolledStudents para la API
-type CourseData = FormFields & {
-  enrolledStudents?: number;
-};
+import { useCourseForm } from "./CourseForm.hooks";
+import { createCourse, updateCourse } from "./CourseForm.service";
+import { useParams } from "react-router-dom";
+import { FormFields } from "./CourseForm.types";
 
 const CourseForm = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [loading, setLoading] = useState(!!id);
-  const [currentEnrolled, setCurrentEnrolled] = useState(0);
-  
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<FormFields>({ 
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      id: "",
-      name: "",
-      professor: "",
-      maxSlots: 1
-    }
-  });
+    form,
+    isEditMode,
+    loading,
+    dialog,
+    setDialog,
+    currentEnrolled,
+    navigate
+  } = useCourseForm();
 
-  const [dialog, setDialog] = useState({ open: false, success: true, message: "" });
-
-  // Cargar datos del curso si estamos en modo edición
-  useEffect(() => {
-    if (!id) return;
-
-    const fetchCourse = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`http://localhost:3000/api/courses/${id}`);
-        
-        if (!response.ok) {
-          throw new Error("Curso no encontrado");
-        }
-
-        const courseData: CourseData = await response.json();
-        
-        // Guardamos enrolledStudents para usarlo en el PATCH
-        if (courseData.enrolledStudents !== undefined) {
-          setCurrentEnrolled(courseData.enrolledStudents);
-        }
-        
-        // Reseteamos solo los campos del formulario
-        reset({
-          id: courseData.id,
-          name: courseData.name,
-          professor: courseData.professor,
-          maxSlots: courseData.maxSlots
-        });
-        
-        setIsEditMode(true);
-      } catch (error) {
-        setDialog({
-          open: true,
-          success: false,
-          message: error instanceof Error ? error.message : "Error al cargar el curso",
-        });
-        navigate("/courses");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCourse();
-  }, [id, reset, navigate]);
+  const { register, handleSubmit, formState: { errors } } = form;
+  const { id } = useParams();
 
   const onSubmit = async (data: FormFields) => {
     try {
       if (isEditMode && id) {
-        // Preparamos los datos para el PATCH incluyendo enrolledStudents
-        const patchData = {
+        await updateCourse(id, {
           ...data,
           enrolledStudents: currentEnrolled
-        };
-        
-        const { id: _, ...updateData } = patchData;
-        
-        const response = await fetch(`http://localhost:3000/api/courses/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updateData),
         });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          const errorMessage = errorData?.message || "Ocurrió un error al actualizar el curso.";
-          throw new Error(errorMessage);
-        }
-
-        setDialog({ open: true, success: true, message: "El curso ha sido actualizado con éxito." });
+        setDialog({ 
+          open: true, 
+          success: true, 
+          message: "El curso ha sido actualizado con éxito." 
+        });
       } else {
-        // Petición POST para crear nuevo curso (sin enrolledStudents)
-        const response = await fetch("http://localhost:3000/api/courses/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+        await createCourse(data);
+        setDialog({ 
+          open: true, 
+          success: true, 
+          message: "El curso ha sido creado con éxito." 
         });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          const errorMessage = errorData?.message || "Ocurrió un error al crear el curso.";
-          throw new Error(errorMessage);
-        }
-
-        setDialog({ open: true, success: true, message: "El curso ha sido creado con éxito." });
-        reset();
+        form.reset();
       }
     } catch (error) {
       setDialog({
@@ -165,7 +75,7 @@ const CourseForm = () => {
       <Paper elevation={0} sx={{ p: 4, mt: 1 }}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={2}>
-            {/* Campo: ID del curso */}
+            {/* Campos del formulario */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -178,7 +88,6 @@ const CourseForm = () => {
               />
             </Grid>
 
-            {/* Campo: Nombre del curso */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -190,7 +99,6 @@ const CourseForm = () => {
               />
             </Grid>
 
-            {/* Campo: Nombre del profesor */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -202,7 +110,6 @@ const CourseForm = () => {
               />
             </Grid>
 
-            {/* Campo: Número máximo de cupos */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -215,7 +122,6 @@ const CourseForm = () => {
               />
             </Grid>
 
-            {/* Botón de envío */}
             <Grid item xs={12}>
               <Button type="submit" variant="contained" color="primary" fullWidth>
                 {isEditMode ? "Actualizar Curso" : "Crear Curso"}
@@ -225,8 +131,11 @@ const CourseForm = () => {
         </form>
       </Paper>
 
-      {/* Diálogo de éxito o error */}
-      <Dialog open={dialog.open} onClose={() => setDialog({ ...dialog, open: false })}>
+      {/* Diálogo de feedback */}
+      <Dialog 
+        open={dialog.open} 
+        onClose={() => setDialog({ ...dialog, open: false })}
+      >
         <DialogTitle>{dialog.success ? "Éxito" : "Error"}</DialogTitle>
         <DialogContent>
           <DialogContentText>{dialog.message}</DialogContentText>
