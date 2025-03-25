@@ -57,8 +57,6 @@ const InscribeStudent = () => {
         body: JSON.stringify(data),
       });
 
-      console.log(await response)
-
       if (!response.ok) {
         const errorData = await response.json();
         setDialog({ open: true, success: false, message: errorData?.message || "Ocurrió un error" });
@@ -72,7 +70,7 @@ const InscribeStudent = () => {
   };
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="sm" sx={{width: "100%", mt: 4 , alignItems: "center", justifyContent: "center"}}>
       <h4>Inscribir Estudiante a Curso</h4>
       <Paper elevation={3} sx={{ p: 4, mt: 2 }}>
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -112,7 +110,11 @@ const InscribeStudent = () => {
       <Dialog open={dialog.open} onClose={() => setDialog({ ...dialog, open: false })}>
         <DialogTitle>{dialog.success ? "Éxito" : "Error"}</DialogTitle>
         <DialogContent>
-          <DialogContentText>{dialog.message}</DialogContentText>
+        <DialogContentText>
+            {dialog.message === "El usuario ya está inscrito en este curso."
+                ? `${dialog.message}. Modifica la capacidad del curso.`
+                : dialog.message}
+            </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialog({ ...dialog, open: false })} color="primary" autoFocus>

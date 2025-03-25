@@ -16,6 +16,7 @@ import CreateCourse from "./pages/CreateCourse";
 import CoursesList from "./pages/CoursesList";
 import CourseInfo from "./pages/CourseInfo";
 import InscribeStudent from "./pages/InscribeStudent";
+import InscriptionsList from "./pages/InscriptionsList";
 
 const drawerWidth = 240; // Ancho de la barra lateral
 
@@ -140,13 +141,13 @@ function App() {
             <Route path="courses/:id" element={<CourseInfo />} />
 
             {/* Rutas de Inscripciones (momentáneas) */}
-            <Route path="inscriptions/" element={<div>Ver Inscripciones</div>} />
+            <Route path="inscriptions/" element={<InscriptionsList/>} />
             <Route path="inscriptions/new" element={<InscribeStudent/>} />
           </Routes>
-        </Box>
+        </Box>  
       </Box>
     </Router>
   );
 }
 
-export default App;
+export default App; 
