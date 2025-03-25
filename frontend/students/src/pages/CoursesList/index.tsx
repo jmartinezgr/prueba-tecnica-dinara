@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Importa useNavigate
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -11,63 +10,15 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
-
-type Course = {
-  id: string;
-  name: string;
-  professor: string;
-  maxSlots: number;
-  enrolledStudents: number;
-};
+import { useCourses } from './CoursesList.hooks';
 
 const CoursesList = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate(); // Hook para navegar
+  const { courses, loading, error, removeCourse } = useCourses();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/api/courses");
-        if (!response.ok) throw new Error("Error al obtener los cursos");
-        const data = await response.json();
-        setCourses(data);
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCourses();
-  }, []);
-
-  const handleView = (id: string) => {
-    // Navegar a la ruta course/:id
-    navigate(`/courses/${id}`);
-  };
-
-  const handleEdit = (id:string) => {
-    // Navegar a la ruta edit-course/:id
-    navigate(`/courses/edit/${id}`);
-  }
-
-  const handleDelete = async (id: string) => {
-    try {
-      const response = await fetch(`http://localhost:3000/api/courses/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Error al eliminar el curso");
-
-      // Actualizar la lista de cursos después de eliminar
-      setCourses((prevCourses) => prevCourses.filter((course) => course.id !== id));
-      console.log("Curso eliminado con éxito");
-    } catch (err) {
-      console.error("Error al eliminar el curso:", (err as Error).message);
-    }
-  };
+  const handleView = (id: string) => navigate(`/courses/${id}`);
+  const handleEdit = (id: string) => navigate(`/courses/edit/${id}`);
+  const handleDelete = (id: string) => removeCourse(id);
 
   if (loading) return <CircularProgress />;
   if (error) return <p>Error: {error}</p>;
@@ -75,18 +26,18 @@ const CoursesList = () => {
   return (
     <TableContainer component={Paper} sx={{ width: "100%", flexGrow: 1 }}>
       <Table sx={{ minWidth: "100%", tableLayout: "fixed" }} aria-label="courses table">
-        <TableHead>
-          <TableRow>
-            <TableCell>ID del Curso</TableCell>
-            <TableCell>Nombre del Curso</TableCell>
-            <TableCell>Profesor</TableCell>
-            <TableCell>Cupos Máximos</TableCell>
-            <TableCell>Estudiantes Inscritos</TableCell>
-            <TableCell>Editar</TableCell>
-            <TableCell>Ver Más</TableCell>
-            <TableCell>Eliminar</TableCell>
-          </TableRow>
-        </TableHead>
+      <TableHead> 
+        <TableRow> 
+          <TableCell>ID del Curso</TableCell> 
+          <TableCell>Nombre del Curso</TableCell> 
+          <TableCell>Profesor</TableCell> 
+          <TableCell>Cupos Máximos</TableCell> 
+          <TableCell>Estudiantes Inscritos</TableCell> 
+          <TableCell>Editar</TableCell> 
+          <TableCell>Ver Más</TableCell> 
+          <TableCell>Eliminar</TableCell> 
+        </TableRow> 
+      </TableHead>
         <TableBody>
           {courses.map((course) => (
             <TableRow key={course.id}>
@@ -96,7 +47,7 @@ const CoursesList = () => {
               <TableCell>{course.maxSlots}</TableCell>
               <TableCell>{course.enrolledStudents}</TableCell>
               <TableCell>
-              <Button
+                <Button
                   variant="contained"
                   color="info"
                   size="small"
@@ -118,7 +69,7 @@ const CoursesList = () => {
                 </Button>
               </TableCell>
               <TableCell>
-              <Button
+                <Button
                   variant="contained"
                   color="secondary"
                   size="small"
