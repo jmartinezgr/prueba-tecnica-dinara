@@ -16,30 +16,42 @@ import {
   DialogTitle,
 } from "@mui/material";
 
-// Esquema de validación con Zod
-const schema = z.object({
+// Esquema de validación con Zod (sin enrolledStudents en el formulario)
+const formSchema = z.object({
   id: z.string().min(1, "El ID es obligatorio"),
   name: z.string().min(1, "El nombre del curso es obligatorio"),
   professor: z.string().min(1, "El nombre del profesor es obligatorio"),
   maxSlots: z.number().min(1, "El número máximo de cupos debe ser al menos 1"),
-  enrolledStudents: z.number().min(0, "El número de estudiantes inscritos no puede ser negativo"),
 });
 
-type FormFields = z.infer<typeof schema>;
+type FormFields = z.infer<typeof formSchema>;
+
+// Tipo completo incluyendo enrolledStudents para la API
+type CourseData = FormFields & {
+  enrolledStudents?: number;
+};
 
 const CourseForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isEditMode, setIsEditMode] = useState(false);
-  const [loading, setLoading] = useState(!!id); // Cargar solo si hay ID
+  const [loading, setLoading] = useState(!!id);
+  const [currentEnrolled, setCurrentEnrolled] = useState(0);
   
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
-  } = useForm<FormFields>({ resolver: zodResolver(schema) });
+  } = useForm<FormFields>({ 
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      id: "",
+      name: "",
+      professor: "",
+      maxSlots: 1
+    }
+  });
 
   const [dialog, setDialog] = useState({ open: false, success: true, message: "" });
 
@@ -49,14 +61,28 @@ const CourseForm = () => {
 
     const fetchCourse = async () => {
       try {
+        setLoading(true);
         const response = await fetch(`http://localhost:3000/api/courses/${id}`);
         
         if (!response.ok) {
           throw new Error("Curso no encontrado");
         }
 
-        const courseData = await response.json();
-        reset(courseData);
+        const courseData: CourseData = await response.json();
+        
+        // Guardamos enrolledStudents para usarlo en el PATCH
+        if (courseData.enrolledStudents !== undefined) {
+          setCurrentEnrolled(courseData.enrolledStudents);
+        }
+        
+        // Reseteamos solo los campos del formulario
+        reset({
+          id: courseData.id,
+          name: courseData.name,
+          professor: courseData.professor,
+          maxSlots: courseData.maxSlots
+        });
+        
         setIsEditMode(true);
       } catch (error) {
         setDialog({
@@ -75,16 +101,19 @@ const CourseForm = () => {
 
   const onSubmit = async (data: FormFields) => {
     try {
-      if (isEditMode) {
-        // Petición PATCH para actualizar
+      if (isEditMode && id) {
+        // Preparamos los datos para el PATCH incluyendo enrolledStudents
+        const patchData = {
+          ...data,
+          enrolledStudents: currentEnrolled
+        };
+        
+        const { id: _, ...updateData } = patchData;
+        
         const response = await fetch(`http://localhost:3000/api/courses/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: data.name,
-            professor: data.professor,
-            maxSlots: data.maxSlots
-          }),
+          body: JSON.stringify(updateData),
         });
 
         if (!response.ok) {
@@ -95,7 +124,7 @@ const CourseForm = () => {
 
         setDialog({ open: true, success: true, message: "El curso ha sido actualizado con éxito." });
       } else {
-        // Petición POST para crear
+        // Petición POST para crear nuevo curso (sin enrolledStudents)
         const response = await fetch("http://localhost:3000/api/courses/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -182,20 +211,6 @@ const CourseForm = () => {
                 {...register("maxSlots", { valueAsNumber: true })}
                 error={!!errors.maxSlots}
                 helperText={errors.maxSlots?.message || ""}
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-
-            {/* Campo: Estudiantes inscritos (solo lectura en modo edición) */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Estudiantes Inscritos"
-                type="number"
-                {...register("enrolledStudents", { valueAsNumber: true })}
-                error={!!errors.enrolledStudents}
-                helperText={errors.enrolledStudents?.message || ""}
-                disabled={isEditMode}
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>

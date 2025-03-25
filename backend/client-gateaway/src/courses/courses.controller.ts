@@ -14,12 +14,14 @@ import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { COURSE_SERVICE } from 'src/config';
+import { COURSE_SERVICE, INSCRIPTION_SERVICE } from 'src/config';
 
 @Controller('courses')
 export class CoursesController {
   constructor(
     @Inject(COURSE_SERVICE) private readonly courseClient: ClientProxy,
+    @Inject(INSCRIPTION_SERVICE)
+    private readonly inscriptionsClient: ClientProxy,
   ) {}
 
   @Post()
@@ -50,6 +52,23 @@ export class CoursesController {
   ) {
     try {
       const updatedData = { ...updateCourseDto, id };
+
+      if (updateCourseDto.maxSlots) {
+        const inscriptions = await firstValueFrom(
+          this.inscriptionsClient.send(
+            { cmd: 'findInscriptions' },
+            { courseId: id },
+          ),
+        );
+
+        if (inscriptions.length > updateCourseDto.maxSlots) {
+          throw new HttpException(
+            'El número de cupos no puede ser menor a la cantidad de estudiantes inscritos',
+            400,
+          );
+        }
+      }
+
       return await firstValueFrom(
         this.courseClient.send({ cmd: 'updateCourse' }, updatedData),
       );

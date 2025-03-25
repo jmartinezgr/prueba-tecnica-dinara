@@ -111,8 +111,8 @@ const InscribeStudent = () => {
         <DialogTitle>{dialog.success ? "Éxito" : "Error"}</DialogTitle>
         <DialogContent>
         <DialogContentText>
-            {dialog.message === "El usuario ya está inscrito en este curso."
-                ? `${dialog.message}. Modifica la capacidad del curso.`
+            {dialog.message === "No hay cupo en el curso"
+                ? `${dialog.message}. Modifica la capacidad del curso si lo deseas.`
                 : dialog.message}
             </DialogContentText>
         </DialogContent>
