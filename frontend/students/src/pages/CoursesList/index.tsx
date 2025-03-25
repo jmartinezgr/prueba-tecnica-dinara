@@ -48,6 +48,11 @@ const CoursesList = () => {
     navigate(`/courses/${id}`);
   };
 
+  const handleEdit = (id:string) => {
+    // Navegar a la ruta edit-course/:id
+    navigate(`/courses/edit/${id}`);
+  }
+
   const handleDelete = async (id: string) => {
     try {
       const response = await fetch(`http://localhost:3000/api/courses/${id}`, {
@@ -77,7 +82,9 @@ const CoursesList = () => {
             <TableCell>Profesor</TableCell>
             <TableCell>Cupos Máximos</TableCell>
             <TableCell>Estudiantes Inscritos</TableCell>
-            <TableCell>Acciones</TableCell>
+            <TableCell>Editar</TableCell>
+            <TableCell>Ver Más</TableCell>
+            <TableCell>Eliminar</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -89,6 +96,17 @@ const CoursesList = () => {
               <TableCell>{course.maxSlots}</TableCell>
               <TableCell>{course.enrolledStudents}</TableCell>
               <TableCell>
+              <Button
+                  variant="contained"
+                  color="info"
+                  size="small"
+                  onClick={() => handleEdit(course.id)}
+                  sx={{ mr: 1 }}
+                >
+                  Editar
+                </Button>
+              </TableCell>
+              <TableCell>
                 <Button
                   variant="contained"
                   color="primary"
@@ -98,7 +116,9 @@ const CoursesList = () => {
                 >
                   Ver más
                 </Button>
-                <Button
+              </TableCell>
+              <TableCell>
+              <Button
                   variant="contained"
                   color="secondary"
                   size="small"

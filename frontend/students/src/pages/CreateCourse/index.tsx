@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   TextField,
   Button,
@@ -26,42 +27,112 @@ const schema = z.object({
 
 type FormFields = z.infer<typeof schema>;
 
-const CreateCourse = () => {
+const CourseForm = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [loading, setLoading] = useState(!!id); // Cargar solo si hay ID
+  
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm<FormFields>({ resolver: zodResolver(schema) });
 
   const [dialog, setDialog] = useState({ open: false, success: true, message: "" });
 
+  // Cargar datos del curso si estamos en modo edición
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchCourse = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/courses/${id}`);
+        
+        if (!response.ok) {
+          throw new Error("Curso no encontrado");
+        }
+
+        const courseData = await response.json();
+        reset(courseData);
+        setIsEditMode(true);
+      } catch (error) {
+        setDialog({
+          open: true,
+          success: false,
+          message: error instanceof Error ? error.message : "Error al cargar el curso",
+        });
+        navigate("/courses");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourse();
+  }, [id, reset, navigate]);
+
   const onSubmit = async (data: FormFields) => {
     try {
-      console.log("Datos enviados:", data);
-      const response = await fetch("http://localhost:3000/api/courses/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      if (isEditMode) {
+        // Petición PATCH para actualizar
+        const response = await fetch(`http://localhost:3000/api/courses/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: data.name,
+            professor: data.professor,
+            maxSlots: data.maxSlots
+          }),
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        const errorMessage = errorData?.message || "Ocurrió un error inesperado.";
-        setDialog({ open: true, success: false, message: `Error: ${errorMessage}` });
-        return;
+        if (!response.ok) {
+          const errorData = await response.json();
+          const errorMessage = errorData?.message || "Ocurrió un error al actualizar el curso.";
+          throw new Error(errorMessage);
+        }
+
+        setDialog({ open: true, success: true, message: "El curso ha sido actualizado con éxito." });
+      } else {
+        // Petición POST para crear
+        const response = await fetch("http://localhost:3000/api/courses/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          const errorMessage = errorData?.message || "Ocurrió un error al crear el curso.";
+          throw new Error(errorMessage);
+        }
+
+        setDialog({ open: true, success: true, message: "El curso ha sido creado con éxito." });
+        reset();
       }
-
-      setDialog({ open: true, success: true, message: "El curso ha sido creado con éxito." });
-      reset();
-    } catch {
-      setDialog({ open: true, success: false, message: "Error: No se pudo conectar con el servidor." });
+    } catch (error) {
+      setDialog({
+        open: true,
+        success: false,
+        message: error instanceof Error ? error.message : "Error inesperado",
+      });
     }
   };
 
+  if (loading) {
+    return (
+      <Container maxWidth="lg">
+        <Paper elevation={0} sx={{ p: 4, mt: 1, textAlign: "center" }}>
+          Cargando curso...
+        </Paper>
+      </Container>
+    );
+  }
+
   return (
     <Container maxWidth="lg">
-      <h4>Crear Curso</h4>
+      <h4>{isEditMode ? "Editar Curso" : "Crear Curso"}</h4>
       <Paper elevation={0} sx={{ p: 4, mt: 1 }}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={2}>
@@ -73,6 +144,8 @@ const CreateCourse = () => {
                 {...register("id")}
                 error={!!errors.id}
                 helperText={errors.id?.message || ""}
+                disabled={isEditMode}
+                InputLabelProps={{ shrink: true }}
               />
             </Grid>
 
@@ -84,6 +157,7 @@ const CreateCourse = () => {
                 {...register("name")}
                 error={!!errors.name}
                 helperText={errors.name?.message || ""}
+                InputLabelProps={{ shrink: true }}
               />
             </Grid>
 
@@ -95,6 +169,7 @@ const CreateCourse = () => {
                 {...register("professor")}
                 error={!!errors.professor}
                 helperText={errors.professor?.message || ""}
+                InputLabelProps={{ shrink: true }}
               />
             </Grid>
 
@@ -107,10 +182,11 @@ const CreateCourse = () => {
                 {...register("maxSlots", { valueAsNumber: true })}
                 error={!!errors.maxSlots}
                 helperText={errors.maxSlots?.message || ""}
+                InputLabelProps={{ shrink: true }}
               />
             </Grid>
 
-            {/* Campo: Estudiantes inscritos (opcional, por defecto 0) */}
+            {/* Campo: Estudiantes inscritos (solo lectura en modo edición) */}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -119,14 +195,15 @@ const CreateCourse = () => {
                 {...register("enrolledStudents", { valueAsNumber: true })}
                 error={!!errors.enrolledStudents}
                 helperText={errors.enrolledStudents?.message || ""}
-                defaultValue={0}
+                disabled={isEditMode}
+                InputLabelProps={{ shrink: true }}
               />
             </Grid>
 
             {/* Botón de envío */}
             <Grid item xs={12}>
               <Button type="submit" variant="contained" color="primary" fullWidth>
-                Crear Curso
+                {isEditMode ? "Actualizar Curso" : "Crear Curso"}
               </Button>
             </Grid>
           </Grid>
@@ -140,7 +217,16 @@ const CreateCourse = () => {
           <DialogContentText>{dialog.message}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialog({ ...dialog, open: false })} color="primary" autoFocus>
+          <Button 
+            onClick={() => {
+              setDialog({ ...dialog, open: false });
+              if (dialog.success && !isEditMode) {
+                navigate("/courses");
+              }
+            }} 
+            color="primary" 
+            autoFocus
+          >
             Cerrar
           </Button>
         </DialogActions>
@@ -149,4 +235,4 @@ const CreateCourse = () => {
   );
 };
 
-export default CreateCourse;
+export default CourseForm;
