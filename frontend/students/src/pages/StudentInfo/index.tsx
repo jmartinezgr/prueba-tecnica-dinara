@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Paper,
@@ -14,91 +13,17 @@ import {
   Box,
   Button,
 } from "@mui/material";
-
-type Student = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  documentDepartment?: string;
-  documentPlace?: string;
-  gender: "Masculino" | "Femenino" | "Otro";
-  ethnicity?: string;
-  personalEmail: string;
-  institutionalEmail: string;
-  mobilePhone?: string;
-  landlinePhone?: string;
-  birthDate: string;
-  nationality: string;
-};
-
-type CourseDetails = {
-  id: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  enrolledStudents: number;
-  maxSlots: number;
-  professor: string;
-};
-
-type Course = {
-  courseId: string;
-  userId: string;
-  courseDetails: CourseDetails;
-};
+import { useStudentInfo } from "./StudentInfo.hooks";
 
 const StudentInfo = () => {
-  const { id } = useParams<{ id: string }>(); // Obtener el ID del estudiante de la URL
-  const [student, setStudent] = useState<Student | null>(null);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchStudentData = async () => {
-      try {
-        // Obtener información del estudiante
-        const studentResponse = await fetch(`http://localhost:3000/api/students/${id}`);
-        if (!studentResponse.ok) throw new Error("Error al obtener la información del estudiante");
-        const studentData = await studentResponse.json();
-        setStudent(studentData);
-
-        // Obtener cursos inscritos
-        const coursesResponse = await fetch(`http://localhost:3000/api/inscriptions/?userId=${id}`);
-        console.log(coursesResponse);
-        if (!coursesResponse.ok) throw new Error("Error al obtener los cursos inscritos");
-        const coursesData = await coursesResponse.json();
-        console.log(coursesData);
-        setCourses(coursesData);
-
-        setLoading(false);
-      } catch (err) {
-        setError((err as Error).message);
-        setLoading(false);
-      }
-    };
-
-    fetchStudentData();
-  }, [id]);
+  const { id } = useParams<{ id: string }>();
+  const { student, courses, loading, error, removeInscription } = useStudentInfo(id || "");
 
   const handleDeleteInscription = async (courseId: string, userId: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/inscriptions`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseId, userId }),
-      });
-
-      if (!response.ok) throw new Error("Error al eliminar la inscripción");
-
-      // Actualizar la lista de cursos después de eliminar
-      setCourses((prevCourses) =>
-        prevCourses.filter((course) => course.courseId !== courseId || course.userId !== userId),
-      );
-
-      console.log("Inscripción eliminada con éxito");
-    } catch (error) {
-      console.error("Error al eliminar la inscripción:", error);
+      await removeInscription(courseId, userId);
+    } catch {
+      // El error ya se maneja en el hook
     }
   };
 
