@@ -49,6 +49,32 @@ export class InscriptionsService extends PrismaClient implements OnModuleInit {
     }
   }
 
+  async findOneInscription(filter: { userId: string; courseId: string }) {
+    try {
+      const inscription = await this.inscription.findFirst({
+        where: {
+          userId: filter.userId,
+          courseId: filter.courseId,
+        },
+      });
+
+      if (!inscription) {
+        throw new RpcException({
+          statusCode: 404,
+          message: 'La inscripción no existe',
+        });
+      }
+
+      return inscription;
+    } catch (error) {
+      console.error(error);
+      throw new RpcException({
+        statusCode: 500,
+        message: 'Error al obtener la inscripción.',
+      });
+    }
+  }
+
   async remove(userId: string, courseId: string) {
     try {
       return await this.inscription.delete({

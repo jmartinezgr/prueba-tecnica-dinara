@@ -21,3 +21,8 @@ export class CreateCourseDto {
   @Min(0)
   enrolledStudents: number = 0;
 }
+
+export type CourseWithTimestamps = CreateCourseDto & {
+  createdAt: string;
+  updatedAt: string;
+};

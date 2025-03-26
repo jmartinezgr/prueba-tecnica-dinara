@@ -9,3 +9,7 @@ export class CreateInscriptionDto {
   @IsNotEmpty()
   courseId: string;
 }
+
+export type InscriptionWithTimestamps = CreateInscriptionDto & {
+  createdAt: string;
+};

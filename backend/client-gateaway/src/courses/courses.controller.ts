@@ -12,20 +12,23 @@ import {
 } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { CreateCourseDto } from './dto/create-course.dto';
+import { CourseWithTimestamps, CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { COURSE_SERVICE } from 'src/config';
+import { COURSE_SERVICE, INSCRIPTION_SERVICE } from 'src/config';
+import { InscriptionWithTimestamps } from 'src/inscriptions/dto/create-inscription.dto';
 
 @Controller('courses')
 export class CoursesController {
   constructor(
     @Inject(COURSE_SERVICE) private readonly courseClient: ClientProxy,
+    @Inject(INSCRIPTION_SERVICE)
+    private readonly inscriptionsClient: ClientProxy,
   ) {}
 
   @Post()
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
     try {
-      return await firstValueFrom(
+      return await firstValueFrom<CourseWithTimestamps>(
         this.courseClient.send({ cmd: 'createCourse' }, createCourseDto),
       );
     } catch (error: unknown) {
@@ -50,7 +53,24 @@ export class CoursesController {
   ) {
     try {
       const updatedData = { ...updateCourseDto, id };
-      return await firstValueFrom(
+
+      if (updateCourseDto.maxSlots) {
+        const inscriptions = await firstValueFrom<InscriptionWithTimestamps[]>(
+          this.inscriptionsClient.send(
+            { cmd: 'findInscriptions' },
+            { courseId: id },
+          ),
+        );
+
+        if (inscriptions.length > updateCourseDto.maxSlots) {
+          throw new HttpException(
+            'El número de cupos no puede ser menor a la cantidad de estudiantes inscritos',
+            400,
+          );
+        }
+      }
+
+      return await firstValueFrom<CourseWithTimestamps>(
         this.courseClient.send({ cmd: 'updateCourse' }, updatedData),
       );
     } catch (error: unknown) {

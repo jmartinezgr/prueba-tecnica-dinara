@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-
 import {
   IsString,
   IsOptional,
@@ -61,3 +59,8 @@ export class CreateStudentDto {
   @IsNotEmpty()
   nationality: string;
 }
+
+export type ReturnCreateData = CreateStudentDto & {
+  createdAt: Date;
+  updateAt: Date;
+};

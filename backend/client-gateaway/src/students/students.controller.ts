@@ -10,7 +10,10 @@ import {
   InternalServerErrorException,
   HttpException,
 } from '@nestjs/common';
-import { CreateStudentDto } from './dto/create-student.dto';
+import {
+  CreateStudentDto,
+  StudentWithTimestamps,
+} from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { STUDENT_SERVICE } from 'src/config';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
@@ -24,9 +27,8 @@ export class StudentsController {
 
   @Post()
   async createStudent(@Body() createStudentDto: CreateStudentDto) {
-    console.log('🛠 Enviando datos:', createStudentDto);
     try {
-      return await firstValueFrom<CreateStudentDto>(
+      return await firstValueFrom<StudentWithTimestamps>(
         this.studentClient.send({ cmd: 'createStudent' }, createStudentDto),
       );
     } catch (error: unknown) {
@@ -55,12 +57,18 @@ export class StudentsController {
 
   @Get()
   findAllStudents() {
-    return this.studentClient.send({ cmd: 'findStudents' }, {});
+    return this.studentClient.send<StudentWithTimestamps[]>(
+      { cmd: 'findStudents' },
+      {},
+    );
   }
 
   @Get(':id')
   findOneStudent(@Param('id') id: string) {
-    return this.studentClient.send({ cmd: 'findOneStudent' }, { id });
+    return this.studentClient.send<StudentWithTimestamps>(
+      { cmd: 'findOneStudent' },
+      { id },
+    );
   }
 
   @Patch(':id')
@@ -72,7 +80,7 @@ export class StudentsController {
       // Sobrescribe el ID en el DTO
       const updatedData = { ...updateStudentDto, id };
 
-      return await firstValueFrom<CreateStudentDto>(
+      return await firstValueFrom<StudentWithTimestamps>(
         this.studentClient.send({ cmd: 'updateStudent' }, updatedData),
       );
     } catch (error: unknown) {
