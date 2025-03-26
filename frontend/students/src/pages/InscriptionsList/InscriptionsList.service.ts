@@ -1,6 +1,5 @@
+import { API_BASE_URL } from "../../config";
 import { Inscription } from "./InscriptionsList.types";
-
-const API_BASE_URL = "http://localhost:3000/api";
 
 export const fetchInscriptions = async (): Promise<Inscription[]> => {
   const response = await fetch(`${API_BASE_URL}/inscriptions`);

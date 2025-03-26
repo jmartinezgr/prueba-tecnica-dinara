@@ -1,18 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import federation from "@originjs/vite-plugin-federation";
+import type {ViteUserConfig } from "vitest/config";
 
-export default defineConfig({
+// Extiende la configuración con Vitest
+const config: ViteUserConfig = {
   plugins: [
     react(),
-    federation({
-      name: "students",
-      filename: "remoteEntry.js", // Se asegura que el archivo se genere en la raíz
-      exposes: {
-        "./StudentsApp": "./src/StudentsApp.tsx",
-      },
-      shared: ["react", "react-dom"],
-    }),
   ],
   test: {
     globals: true,
@@ -20,13 +13,16 @@ export default defineConfig({
     setupFiles: "./src/setupTests.ts",
   },
   server: {
-    port: 5002,
+    port: 5000,
     headers: {
       "Access-Control-Allow-Origin": "*",
     },
   },
   preview: {
-    port: 5002,
+    port: 5000,
+  },
+  define: {
+    'import.meta.env.REACT_APP_API_HOST': JSON.stringify(process.env.REACT_APP_API_HOST|| 'localhost'),
   },
   build: {
     target: "esnext",
@@ -34,8 +30,10 @@ export default defineConfig({
     cssCodeSplit: false,
     rollupOptions: {
       output: {
-        entryFileNames: "[name].js", // Evita que remoteEntry.js se mueva a assets
+        entryFileNames: "[name].js",
       },
     },
   },
-});
+};
+
+export default defineConfig(config);

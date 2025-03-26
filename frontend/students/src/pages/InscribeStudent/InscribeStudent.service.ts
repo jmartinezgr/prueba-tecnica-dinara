@@ -1,6 +1,5 @@
+import { API_BASE_URL } from "../../config";
 import { FormFields, Option } from "./InscribeStudent.types";
-
-const API_BASE_URL = "http://localhost:3000/api";
 
 export const fetchStudents = async (): Promise<Option[]> => {
   const response = await fetch(`${API_BASE_URL}/students`, { method: "GET" });

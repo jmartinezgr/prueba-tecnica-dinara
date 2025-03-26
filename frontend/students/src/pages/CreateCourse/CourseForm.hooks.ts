@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams, useNavigate } from "react-router-dom";
-import { CourseData, FormFields, formSchema, DialogState } from "./CourseForm.types";
+import { FormFields, formSchema, DialogState } from "./CourseForm.types";
 import { fetchCourse } from "./CourseForm.service";
 
 export const useCourseForm = () => {

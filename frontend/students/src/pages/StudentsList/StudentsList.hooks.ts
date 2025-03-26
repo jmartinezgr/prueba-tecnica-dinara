@@ -17,6 +17,7 @@ export const useStudentsList = (): StudentsListState & {
       const data = await fetchStudents();
       setState({ data, loading: false, error: null });
     } catch (error) {
+      console.log(error);
       setState({
         data: [],
         loading: false,

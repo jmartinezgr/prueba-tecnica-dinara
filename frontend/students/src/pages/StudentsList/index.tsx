@@ -31,7 +31,10 @@ const StudentsList = () => {
   };
 
   if (loading) return <CircularProgress />;
-  if (error) return <Alert severity="error">{error}</Alert>;
+  if (error) {
+    console.log(error);
+    return <Alert severity="error">{error}</Alert>;
+  }
 
   return (
     <>

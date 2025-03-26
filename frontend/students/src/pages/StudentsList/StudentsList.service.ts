@@ -1,10 +1,13 @@
+import { API_BASE_URL } from "../../config";
 import { Student } from "./StudentsList.types";
 
-const API_BASE_URL = "http://localhost:3000/api";
-
 export const fetchStudents = async (): Promise<Student[]> => {
+  console.log(API_BASE_URL);
   const response = await fetch(`${API_BASE_URL}/students`);
-  if (!response.ok) throw new Error("Error al obtener los estudiantes");
+  if (!response.ok) 
+    {
+      console.log(response);
+      throw new Error("Error al obtener los estudiantes");}
   return response.json();
 };
 

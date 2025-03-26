@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Student, Course, StudentInfoState } from "./StudentInfo.types";
+import { StudentInfoState } from "./StudentInfo.types";
 import { fetchStudent, fetchStudentCourses, deleteInscription } from "./StudentInfo.service";
 
 export const useStudentInfo = (id: string): StudentInfoState & {

@@ -1,7 +1,8 @@
+import { API_BASE_URL } from "../../config";
 import { FormFields } from "./CreateStudent.types";
 
 export const createStudent = async (studentData: FormFields) => {
-  const response = await fetch("http://localhost:3000/api/students/", {
+  const response = await fetch(`${API_BASE_URL}/students/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(studentData),

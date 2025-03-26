@@ -1,6 +1,5 @@
+import { API_BASE_URL } from "../../config";
 import { CourseData, FormFields } from "./CourseForm.types";
-
-const API_BASE_URL = "http://localhost:3000/api";
 
 export const fetchCourse = async (id: string): Promise<CourseData> => {
   const response = await fetch(`${API_BASE_URL}/courses/${id}`);
