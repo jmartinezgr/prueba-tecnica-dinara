@@ -10,7 +10,7 @@ Entrar al directorio del proyecto:
 ```bash
 cd prueba-tecnica-dinara
 ```
-
+> ⚠️ **IMPORTANTE:** Asegurate de tener docker desktop instalado y corriendo en el momento de ejecutar el siguiente comando.
 Ejecutar el comando para iniciar los servicios:
 ```bash
 docker-compose up --build -d
