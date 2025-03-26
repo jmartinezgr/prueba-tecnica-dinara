@@ -1,40 +1,10 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import {
-  TextField,
-  Button,
-  Grid,
-  MenuItem,
-  Container,
-  Paper,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
-import { LABELS } from "./labels";
-
-// Esquema de validación con Zod
-const schema = z.object({
-  id: z.string().min(1, "El ID es obligatorio"),
-  firstName: z.string().min(1, "El nombre es obligatorio"),
-  lastName: z.string().min(1, "El apellido es obligatorio"),
-  documentDepartment: z.string().optional(),
-  documentPlace: z.string().optional(),
-  gender: z.enum(["Masculino", "Femenino", "Otro"]),
-  ethnicity: z.string().optional(),
-  personalEmail: z.string().email("Email inválido"),
-  institutionalEmail: z.string().email("Email institucional inválido"),
-  mobilePhone: z.string().optional(),
-  landlinePhone: z.string().optional(),
-  birthDate: z.string().min(1, "La fecha de nacimiento es obligatoria"),
-  nationality: z.string().min(1, "La nacionalidad es obligatoria"),
-});
-
-type FormFields = z.infer<typeof schema>;
+import { Grid, Container, Paper, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { TextField, Button, MenuItem } from "@mui/material";
+import { useCreateStudentForm } from "./CreateStudent.hooks";
+import { useDialog } from "./CreateStudent.hooks";
+import { LABELS } from "./CreateStudent.constants";
+import { createStudent } from "./CreateStudent.service";
+import { FormFields } from "./CreateStudent.types";
 
 const CreateStudent = () => {
   const {
@@ -42,30 +12,25 @@ const CreateStudent = () => {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<FormFields>({ resolver: zodResolver(schema) });
+  } = useCreateStudentForm();
 
-  const [dialog, setDialog] = useState({ open: false, success: true, message: "" });
+  const { dialog, setDialog, closeDialog } = useDialog();
 
   const onSubmit = async (data: FormFields) => {
     try {
-      console.log("Datos enviados:", data);
-      const response = await fetch("http://localhost:3000/api/students/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+      await createStudent(data);
+      setDialog({
+        open: true,
+        success: true,
+        message: "El estudiante ha sido creado con éxito."
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        const errorMessage = errorData?.message || "Ocurrió un error inesperado.";
-        setDialog({ open: true, success: false, message: `Error: ${errorMessage}` });
-        return;
-      }
-
-      setDialog({ open: true, success: true, message: "El estudiante ha sido creado con éxito." });
       reset();
-    } catch {
-      setDialog({ open: true, success: false, message: "Error: No se pudo conectar con el servidor." });
+    } catch (error) {
+      setDialog({
+        open: true,
+        success: false,
+        message: error instanceof Error ? error.message : "Error desconocido"
+      });
     }
   };
 
@@ -82,9 +47,9 @@ const CreateStudent = () => {
                   label={label}
                   type={type || "text"}
                   InputLabelProps={type === "date" ? { shrink: true } : {}}
-                  {...register(name as keyof FormFields)} // Asegura que `name` es una clave válida
-                  error={!!errors[name as keyof FormFields]} // Asegura que `name` es una clave válida
-                  helperText={errors[name as keyof FormFields]?.message || ""} // Asegura que `name` es una clave válida
+                  {...register(name)}
+                  error={!!errors[name]}
+                  helperText={errors[name]?.message || ""}
                 />
               </Grid>
             ))}
@@ -114,13 +79,13 @@ const CreateStudent = () => {
         </form>
       </Paper>
 
-      <Dialog open={dialog.open} onClose={() => setDialog({ ...dialog, open: false })}>
+      <Dialog open={dialog.open} onClose={closeDialog}>
         <DialogTitle>{dialog.success ? "Éxito" : "Error"}</DialogTitle>
         <DialogContent>
           <DialogContentText>{dialog.message}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialog({ ...dialog, open: false })} color="primary" autoFocus>
+          <Button onClick={closeDialog} color="primary" autoFocus>
             Cerrar
           </Button>
         </DialogActions>
