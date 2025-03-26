@@ -9,6 +9,7 @@ import {
   Button,
   CircularProgress,
   Alert,
+  Typography,
 } from "@mui/material";
 import { useEffect } from "react";
 import { useInscriptions } from "./InscriptionsList.hooks";
@@ -41,7 +42,9 @@ const InscriptionsList = () => {
           {successMessage}
         </Alert>
       )}
-      
+      <Typography variant="h4" gutterBottom>
+        Listado de Inscripciones
+      </Typography>
       <TableContainer component={Paper} sx={{ width: "100%", flexGrow: 1 }}>
         <Table sx={{ minWidth: "100%", tableLayout: "fixed" }} aria-label="inscriptions table">
           <TableHead>

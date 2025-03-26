@@ -10,6 +10,7 @@ import {
   Button,
   CircularProgress,
   Alert,
+  Typography,
 } from "@mui/material";
 import { useStudentsList } from "./StudentsList.hooks";
 
@@ -33,6 +34,10 @@ const StudentsList = () => {
   if (error) return <Alert severity="error">{error}</Alert>;
 
   return (
+    <>
+      <Typography variant="h4" gutterBottom>
+        Listado de Estudiantes
+      </Typography>
     <TableContainer component={Paper} sx={{ width: "100%", flexGrow: 1 }}>
       <Table sx={{ minWidth: "100%", tableLayout: "fixed" }} aria-label="students table">
         <TableHead>
@@ -75,6 +80,7 @@ const StudentsList = () => {
         </TableBody>
       </Table>
     </TableContainer>
+    </>
   );
 };
 

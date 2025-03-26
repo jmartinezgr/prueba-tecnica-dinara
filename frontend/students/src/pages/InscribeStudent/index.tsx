@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Typography,
 } from "@mui/material";
 import { useInscriptionForm, useDialog, useOptions } from "./InscribeStudent.hooks";
 import { createInscription } from "./InscribeStudent.service";
@@ -39,7 +40,9 @@ const InscribeStudent = () => {
 
   return (
     <Container maxWidth="sm" sx={{ width: "100%", mt: 4, alignItems: "center", justifyContent: "center" }}>
-      <h4>Inscribir Estudiante a Curso</h4>
+      <Typography variant="h4" gutterBottom>
+        Inscribir Estudiante a Curso
+      </Typography>
       <Paper elevation={3} sx={{ p: 4, mt: 2 }}>
         {error && <p style={{ color: "red" }}>{error}</p>}
         

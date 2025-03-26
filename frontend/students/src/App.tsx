@@ -12,7 +12,6 @@ import { useState } from "react";
 import StudentsList from "./pages/StudentsList";
 import CreateStudent from "./pages/CreateStudents";
 import StudentInfo from "./pages/StudentInfo";
-import CreateCourse from "./pages/CreateCourse";
 import CoursesList from "./pages/CoursesList";
 import CourseInfo from "./pages/CourseInfo";
 import InscribeStudent from "./pages/InscribeStudent";
@@ -132,6 +131,7 @@ function App() {
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
           <Routes>
             {/* Rutas de Estudiantes */}
+            <Route path="/" element={<StudentsList />} />
             <Route path="students/" element={<StudentsList />} />
             <Route path="students/new" element={<CreateStudent />} />
             <Route path="students/:id" element={<StudentInfo />} />

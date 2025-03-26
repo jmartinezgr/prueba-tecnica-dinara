@@ -1,4 +1,4 @@
-import { Grid, Container, Paper, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { Grid, Container, Paper, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material";
 import { TextField, Button, MenuItem } from "@mui/material";
 import { useCreateStudentForm } from "./CreateStudent.hooks";
 import { useDialog } from "./CreateStudent.hooks";
@@ -36,7 +36,9 @@ const CreateStudent = () => {
 
   return (
     <Container maxWidth="lg">
-      <h4>Crea un Estudiante</h4>
+      <Typography variant="h4" gutterBottom>
+        Crea un estudiante
+      </Typography>
       <Paper elevation={0} sx={{ p: 4, mt: 1 }}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={2}>

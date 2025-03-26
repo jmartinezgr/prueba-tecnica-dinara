@@ -9,6 +9,7 @@ import {
   Paper,
   Button,
   CircularProgress,
+  Typography,
 } from "@mui/material";
 import { useCourses } from './CoursesList.hooks';
 
@@ -24,6 +25,10 @@ const CoursesList = () => {
   if (error) return <p>Error: {error}</p>;
 
   return (
+    <>
+    <Typography variant="h4" gutterBottom>
+      Listado de cursos
+    </Typography>
     <TableContainer component={Paper} sx={{ width: "100%", flexGrow: 1 }}>
       <Table sx={{ minWidth: "100%", tableLayout: "fixed" }} aria-label="courses table">
       <TableHead> 
@@ -83,6 +88,7 @@ const CoursesList = () => {
         </TableBody>
       </Table>
     </TableContainer>
+    </>
   );
 };
 
