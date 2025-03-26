@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Importa useNavigate
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -10,56 +9,28 @@ import {
   Paper,
   Button,
   CircularProgress,
+  Alert,
 } from "@mui/material";
+import { useStudentsList } from "./StudentsList.hooks";
 
 const StudentsList = () => {
-  const [students, setStudents] = useState<
-    { id: string; firstName: string; lastName: string; institutionalEmail: string }[]
-  >([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate(); // Hook para navegar
-
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/api/students");
-        if (!response.ok) throw new Error("Error al obtener los estudiantes");
-        const data = await response.json();
-        setStudents(data);
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStudents();
-  }, []);
+  const { data: students, loading, error, removeStudent } = useStudentsList();
+  const navigate = useNavigate();
 
   const handleView = (id: string) => {
-    // Navegar a la ruta student/:id
     navigate(`/students/${id}`);
   };
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/students/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Error al eliminar el estudiante");
-
-      // Actualizar la lista de estudiantes después de eliminar
-      setStudents((prevStudents) => prevStudents.filter((student) => student.id !== id));
-      console.log("Estudiante eliminado con éxito");
-    } catch (err) {
-      console.error("Error al eliminar el estudiante:", (err as Error).message);
+      await removeStudent(id);
+    } catch {
+      // El error ya se maneja en el hook
     }
   };
 
   if (loading) return <CircularProgress />;
-  if (error) return <p>Error: {error}</p>;
+  if (error) return <Alert severity="error">{error}</Alert>;
 
   return (
     <TableContainer component={Paper} sx={{ width: "100%", flexGrow: 1 }}>
