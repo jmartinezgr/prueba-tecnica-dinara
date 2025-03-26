@@ -7,10 +7,14 @@ Clonar el repositorio:
 git clone https://github.com/jmartinezgr/prueba-tecnica-dinara.git
 ```
 Entrar al directorio del proyecto:
+```bash
 cd prueba-tecnica-dinara
+```
 
 Ejecutar el comando para iniciar los servicios:
+```bash
 docker-compose up --build -d
+```
 
 NOTAS SOBRE LA EJECUCIÓN:
 
