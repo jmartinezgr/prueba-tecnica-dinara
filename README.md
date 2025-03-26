@@ -3,8 +3,9 @@ DOCUMENTACIÓN DEL PROYECTO - PRUEBA TÉCNICA DINARA
 PASOS PARA INICIAR EL PROYECTO:
 
 Clonar el repositorio:
+```bash
 git clone https://github.com/jmartinezgr/prueba-tecnica-dinara.git
-
+```
 Entrar al directorio del proyecto:
 cd prueba-tecnica-dinara
 
