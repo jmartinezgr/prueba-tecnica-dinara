@@ -11,12 +11,17 @@ import {
 } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { CreateInscriptionDto } from './dto/create-inscription.dto';
+import {
+  CreateInscriptionDto,
+  InscriptionWithTimestamps,
+} from './dto/create-inscription.dto';
 import {
   INSCRIPTION_SERVICE,
   COURSE_SERVICE,
   STUDENT_SERVICE,
 } from 'src/config';
+import { StudentWithTimestamps } from 'src/students/dto/create-student.dto';
+import { CourseWithTimestamps } from 'src/courses/dto/create-course.dto';
 
 @Controller('inscriptions')
 export class InscriptionsController {
@@ -32,7 +37,7 @@ export class InscriptionsController {
     const { userId, courseId } = createInscriptionDto;
     try {
       // Verificar si el estudiante existe
-      const student = await firstValueFrom(
+      const student = await firstValueFrom<StudentWithTimestamps>(
         this.studentClient.send({ cmd: 'findOneStudent' }, { id: userId }),
       );
       if (!student) {
@@ -40,7 +45,7 @@ export class InscriptionsController {
       }
 
       // Verificar si el curso existe y si hay cupo disponible
-      const course = await firstValueFrom(
+      const course = await firstValueFrom<CourseWithTimestamps>(
         this.courseClient.send({ cmd: 'findOneCourse' }, { id: courseId }),
       );
       if (!course) {
@@ -51,7 +56,7 @@ export class InscriptionsController {
       }
 
       // Crear la inscripción si las verificaciones pasaron
-      const inscription = await firstValueFrom(
+      const inscription = await firstValueFrom<InscriptionWithTimestamps>(
         this.inscriptionsClient.send(
           { cmd: 'createInscription' },
           createInscriptionDto,
@@ -76,7 +81,7 @@ export class InscriptionsController {
   async findAll(@Query() query: { userId?: string; courseId?: string }) {
     try {
       // Obtener las inscripciones basadas en el userId o courseId
-      const inscriptions = await firstValueFrom(
+      const inscriptions = await firstValueFrom<InscriptionWithTimestamps[]>(
         this.inscriptionsClient.send({ cmd: 'findInscriptions' }, query),
       );
       // Si no hay inscripciones, devolver un array vacío
@@ -90,7 +95,7 @@ export class InscriptionsController {
           async (inscription: { userId: string; courseId: string }) => {
             try {
               // Verificar si el curso existe
-              const course = await firstValueFrom(
+              const course = await firstValueFrom<CourseWithTimestamps>(
                 this.courseClient.send(
                   { cmd: 'findOneCourse' },
                   { id: inscription.courseId },
@@ -98,7 +103,7 @@ export class InscriptionsController {
               );
 
               // Si el curso no existe, eliminar la inscripción
-              if (course.status === 'error') {
+              if (!course.id) {
                 console.warn(
                   `Curso no encontrado: ${inscription.courseId}. Eliminando inscripción.`,
                 );
@@ -115,7 +120,7 @@ export class InscriptionsController {
               }
 
               // Verificar si el estudiante existe
-              const student = await firstValueFrom(
+              const student = await firstValueFrom<StudentWithTimestamps>(
                 this.studentClient.send(
                   { cmd: 'findOneStudent' },
                   { id: inscription.userId },
@@ -123,7 +128,7 @@ export class InscriptionsController {
               );
 
               // Si el estudiante no existe, eliminar la inscripción
-              if (student.status === 'error') {
+              if (!student.id) {
                 console.warn(
                   `Estudiante no encontrado: ${inscription.userId}. Eliminando inscripción.`,
                 );
@@ -173,7 +178,7 @@ export class InscriptionsController {
   async remove(@Body() deleteBody: { userId: string; courseId: string }) {
     try {
       // Verificar si el estudiante existe
-      const student = await firstValueFrom(
+      const student = await firstValueFrom<StudentWithTimestamps>(
         this.studentClient.send(
           { cmd: 'findOneStudent' },
           { id: deleteBody.userId },
@@ -184,7 +189,7 @@ export class InscriptionsController {
       }
 
       // Verificar si el curso existe
-      const course = await firstValueFrom(
+      const course = await firstValueFrom<CourseWithTimestamps>(
         this.courseClient.send(
           { cmd: 'findOneCourse' },
           { id: deleteBody.courseId },
@@ -195,7 +200,7 @@ export class InscriptionsController {
       }
 
       // Verificar si la inscripción existe
-      const inscription = await firstValueFrom(
+      const inscription = await firstValueFrom<InscriptionWithTimestamps>(
         this.inscriptionsClient.send(
           { cmd: 'findOneInscription' },
           { userId: deleteBody.userId, courseId: deleteBody.courseId },

@@ -12,9 +12,10 @@ import {
 } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { CreateCourseDto } from './dto/create-course.dto';
+import { CourseWithTimestamps, CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { COURSE_SERVICE, INSCRIPTION_SERVICE } from 'src/config';
+import { InscriptionWithTimestamps } from 'src/inscriptions/dto/create-inscription.dto';
 
 @Controller('courses')
 export class CoursesController {
@@ -27,7 +28,7 @@ export class CoursesController {
   @Post()
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
     try {
-      return await firstValueFrom(
+      return await firstValueFrom<CourseWithTimestamps>(
         this.courseClient.send({ cmd: 'createCourse' }, createCourseDto),
       );
     } catch (error: unknown) {
@@ -54,7 +55,7 @@ export class CoursesController {
       const updatedData = { ...updateCourseDto, id };
 
       if (updateCourseDto.maxSlots) {
-        const inscriptions = await firstValueFrom(
+        const inscriptions = await firstValueFrom<InscriptionWithTimestamps[]>(
           this.inscriptionsClient.send(
             { cmd: 'findInscriptions' },
             { courseId: id },
@@ -69,7 +70,7 @@ export class CoursesController {
         }
       }
 
-      return await firstValueFrom(
+      return await firstValueFrom<CourseWithTimestamps>(
         this.courseClient.send({ cmd: 'updateCourse' }, updatedData),
       );
     } catch (error: unknown) {

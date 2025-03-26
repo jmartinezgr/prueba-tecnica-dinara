@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   gateway:
-    build: client-gateaway 
+    build: ./backend/client-gateaway 
     container_name: client-gateaway
     ports:
       - "3000:3000"
@@ -20,7 +20,7 @@ services:
       - backend-network
 
   students-ms:
-    build: students-ms
+    build: ./backend/students-ms
     container_name: students-ms
     ports:
       - "3001:3001"
@@ -34,7 +34,7 @@ services:
       - backend-network
 
   courses-ms:
-    build: courses-ms
+    build: ./backend/courses-ms
     container_name: courses-ms
     ports:
       - "3002:3002"
@@ -48,7 +48,7 @@ services:
       - backend-network   
 
   inscriptions-ms:
-    build: inscriptions-ms
+    build: ./backend/inscriptions-ms
     container_name: inscriptions-ms
     ports:
       - "3003:3003"
@@ -71,7 +71,7 @@ services:
       - POSTGRES_PASSWORD=dinara1234
     volumes:
       - pgdata_students:/var/lib/postgresql/data
-      - ./students-ms/db/init.sql:/docker-entrypoint-initdb.d/init.sql    
+      - ./backend/students-ms/db/init.sql:/docker-entrypoint-initdb.d/init.sql    
     ports:
       - "5432:5432"
     networks:
@@ -87,7 +87,7 @@ services:
       - POSTGRES_PASSWORD=dinara1234
     volumes:
       - pgdata_courses:/var/lib/postgresql/data
-      - ./courses-ms/db/init.sql:/docker-entrypoint-initdb.d/init.sql    
+      - ./backend/courses-ms/db/init.sql:/docker-entrypoint-initdb.d/init.sql    
     ports:
       - "5433:5432"
     networks:
@@ -103,9 +103,22 @@ services:
       - POSTGRES_PASSWORD=dinara1234
     volumes:
       - pgdata_inscriptions:/var/lib/postgresql/data
-      - ./inscriptions-ms/db/init.sql:/docker-entrypoint-initdb.d/init.sql    
+      - ./backend/inscriptions-ms/db/init.sql:/docker-entrypoint-initdb.d/init.sql    
     ports:
       - "5434:5432"
+    networks:
+      - backend-network
+
+  students-frontend:
+    build: ./frontend/students
+    container_name: students-frontend
+    ports:
+      - "5000:5000"
+    environment:
+      REACT_APP_API_HOST: gateway
+      REACT_APP_API_PORT: 3000
+    depends_on:
+      - gateway
     networks:
       - backend-network
 

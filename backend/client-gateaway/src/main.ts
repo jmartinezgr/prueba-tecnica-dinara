@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api');
-  app.enableCors();
+  app.enableCors('*');
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // Elimina propiedades no definidas en los DTOs
@@ -17,7 +17,7 @@ async function bootstrap() {
       transform: true, // Convierte los tipos automáticamente (por ejemplo, string a Date)
     }),
   );
-  await app.listen(envs.port);
+  await app.listen(envs.port, '0.0.0.0');
 
   logger.log('Client Gateaway is running on port: ', +envs.port);
 }
